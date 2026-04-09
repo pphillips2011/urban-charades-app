@@ -16,8 +16,9 @@
 
   <style>
     :root{
-      --bg0:#7fc9ff;
-      --bg1:#2a7fcf;
+      --bg0:#8bd5ff;
+      --bg1:#3b95df;
+      --bg2:#1769b5;
 
       --green:#00ff00;
       --yellow:#ffeb3b;
@@ -25,8 +26,8 @@
 
       --text:#082643;
 
-      --panelCard:rgba(10,92,170,0.18);
-      --panelCardStrong:rgba(10,92,170,0.28);
+      --panelCard:rgba(255,255,255,0.14);
+      --panelCardStrong:rgba(255,255,255,0.18);
 
       --greenCardTop:#169b45;
       --greenCardBottom:#006b2d;
@@ -43,11 +44,13 @@
     }
 
     body{
+      position:relative;
       background:
-        radial-gradient(circle at 20% 0%, rgba(225,248,255,0.22), transparent 55%),
-        radial-gradient(circle at 85% 18%, rgba(79,195,247,0.20), transparent 58%),
-        radial-gradient(circle at 20% 90%, rgba(3,169,244,0.14), transparent 62%),
-        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
+        radial-gradient(circle at 18% 8%, rgba(255,255,255,0.18), transparent 18%),
+        radial-gradient(circle at 84% 14%, rgba(255,255,255,0.10), transparent 16%),
+        radial-gradient(circle at 20% 90%, rgba(3,169,244,0.16), transparent 30%),
+        radial-gradient(circle at 80% 78%, rgba(0,255,170,0.08), transparent 24%),
+        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 45%, var(--bg2) 100%);
       color:var(--text);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       margin:0;
@@ -68,6 +71,33 @@
         calc(var(--edgePad) + env(safe-area-inset-left));
 
       overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      opacity:0.22;
+      background:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size:24px 24px;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto 50% 8% 50%;
+      width:min(88vw, 900px);
+      height:min(88vw, 900px);
+      transform:translateX(-50%);
+      pointer-events:none;
+      z-index:0;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 28%, transparent 68%);
+      filter:blur(24px);
     }
 
     button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -196,6 +226,15 @@
       opacity:0.9;
     }
 
+    #header,
+    #mainContent,
+    #introOverlay,
+    #foreheadOverlay,
+    #winOverlay{
+      position:relative;
+      z-index:1;
+    }
+
     #header{
       display:flex;
       flex-direction:column;
@@ -267,16 +306,19 @@
       padding:0;
       min-height:clamp(110px, 20vw, 170px);
       aspect-ratio:1 / 1;
-      background:var(--panelCard);
-      outline:2px solid rgba(8,38,67,0.12);
+      background:linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+      outline:1px solid rgba(255,255,255,0.18);
       transition:transform .15s, box-shadow .15s, outline-color .15s;
       text-align:left;
-      box-shadow:0 10px 24px rgba(8,38,67,0.10);
+      box-shadow:
+        0 10px 24px rgba(8,38,67,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+      backdrop-filter: blur(8px);
     }
     .categoryCard:hover{
       transform:scale(1.01);
       box-shadow:0 16px 34px rgba(8,38,67,0.16);
-      outline-color: rgba(8,38,67,0.22);
+      outline-color: rgba(255,255,255,0.26);
     }
     .categoryCard.selected{
       outline:4px solid var(--green);
@@ -359,16 +401,18 @@
       display:flex;
       gap:12px;
       flex-wrap:nowrap;
-      background-color:var(--panelCardStrong);
-      border-radius:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
+      border-radius:16px;
       padding:10px 12px;
       margin:8px auto;
-      border:2px solid var(--green);
+      border:1px solid rgba(255,255,255,0.20);
       width:100%;
       max-width:620px;
       justify-content:space-between;
-      box-shadow:0 12px 30px rgba(8,38,67,0.14);
-      backdrop-filter: blur(3px);
+      box-shadow:
+        0 14px 34px rgba(8,38,67,0.16),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+      backdrop-filter: blur(8px);
     }
 
     .team{
@@ -401,19 +445,21 @@
       font-weight:900;
       margin:10px 0 6px 0;
       color:var(--text);
-      background:rgba(10,92,170,0.16);
-      border:1px solid rgba(8,38,67,0.10);
+      background:rgba(255,255,255,0.16);
+      border:1px solid rgba(255,255,255,0.12);
       padding:6px 12px;
       border-radius:12px;
       display:inline-block;
       width:auto;
       max-width:100%;
+      box-shadow:0 10px 24px rgba(8,38,67,0.10);
+      backdrop-filter: blur(6px);
     }
 
     #roundStage{
       width:100%;
       max-width:100%;
-      min-height:140px;
+      min-height:160px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -421,7 +467,40 @@
       position:relative;
     }
 
+    #startPromptBtn{
+      display:none;
+      border:none;
+      border-radius:22px;
+      width:min(100%, 680px);
+      min-height:150px;
+      padding:20px 24px;
+      background:linear-gradient(180deg,#ff2f4b 0%,#c40022 100%);
+      color:#fff8f8;
+      font-size:clamp(1.8rem, 5vw, 3rem);
+      font-weight:900;
+      letter-spacing:.5px;
+      cursor:pointer;
+      box-shadow:
+        0 18px 45px rgba(100,0,18,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+      text-shadow:0 1px 1px rgba(0,0,0,0.25);
+    }
+    #startPromptBtn.show{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    #startPromptBtn:disabled{
+      opacity:0.55;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:
+        0 18px 45px rgba(100,0,18,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
     #word{
+      display:none;
       font-size:clamp(2rem, 5.5vw, 2.8rem);
       font-weight:900;
       padding:18px 22px;
@@ -437,7 +516,6 @@
       box-shadow:0 18px 45px rgba(0,80,24,0.20);
       text-shadow:0 1px 1px rgba(0,0,0,0.25);
       min-height:140px;
-      display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
@@ -609,8 +687,8 @@
       overflow-wrap:anywhere;
     }
 
-    body.roundFocus #word{
-      display:flex;
+    body.roundFocus #startPromptBtn{
+      display:none !important;
     }
 
     body.roundFocus #actionFlash{
@@ -647,6 +725,12 @@
         font-size:clamp(1.8rem, 8vw, 2.5rem);
         min-height:120px;
         padding:14px 16px;
+      }
+
+      #startPromptBtn{
+        min-height:120px;
+        font-size:clamp(1.6rem, 7vw, 2.2rem);
+        padding:16px 18px;
       }
 
       .overlayCard{
@@ -715,7 +799,8 @@
       }
 
       #word,
-      #actionFlash{
+      #actionFlash,
+      #startPromptBtn{
         min-height:110px;
         font-size:clamp(1.8rem, 6vw, 3rem);
       }
@@ -734,1279 +819,1337 @@
 </head>
 
 <body class="noSelect">
-<div id="introOverlay" class="show" aria-hidden="false">
-  <div class="overlayCard">
-    <img id="introLogo" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
-    <div id="introInstructions">1. Pick a Category &amp; Enter Team name (Optional).
-      2. Tap "Start Round" &amp; Put phone on head to start.
-      3. Your team will shout/act out clues for you guess the word.
-      4. Tilt Up to Pass. Tilt Down for Correct. Have fun!
-      Repost &amp; tag us @UrbanCharadesGame.</div>
-    <button id="enterAppBtn" class="gameBtn" style="background:#ffffff;color:#082643;width:100%;min-width:0;">Enter Game</button>
-  </div>
-</div>
-
-<div id="header">
-  <img id="logoImage" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
-</div>
-
-<audio id="soundCorrect" src="audio/correct.mp3" preload="auto"></audio>
-<audio id="soundSkip" src="audio/skip.mp3" preload="auto"></audio>
-<audio id="soundTimeUp" src="audio/timeup.mp3" preload="auto"></audio>
-<audio id="soundStart" src="audio/start-round.mp3" preload="auto"></audio>
-
-<div id="foreheadOverlay" aria-hidden="true">
-  <div class="overlayCard">
-    <div class="overlayTitle">📱 PLACE ON FOREHEAD</div>
-    <div id="overlaySub" class="overlaySub">Pass the phone to the player and place it on their forehead in any orientation.</div>
-    <div id="countNum">READY</div>
-    <div id="countHint">Tilt UP to pass • Tilt DOWN for correct.</div>
-  </div>
-</div>
-
-<div id="winOverlay" aria-hidden="true">
-  <div class="overlayCard">
-    <div class="overlayTitle">🏆 WINNER</div>
-    <div id="winTeam" class="overlaySub"></div>
-
-    <div style="margin:12px 0;font-weight:900;">
-      <span id="finalScoreA"></span><br/>
-      <span id="finalScoreB"></span>
-    </div>
-
-    <button id="playAgainBtn" class="gameBtn" style="background:#00ff00;color:#000;width:100%;min-width:0;">
-      Play Again
-    </button>
-
-    <button id="newGameBtn" class="gameBtn" style="background:#ffeb3b;color:#000;width:100%;min-width:0;">
-      New Game (Change Category)
-    </button>
-  </div>
-</div>
-
-<div id="mainContent">
-  <div id="categoryTitle">Pick a Category</div>
-  <div id="categoryGrid"></div>
-
-  <div id="teamNamesRow">
-    <input id="teamANameInput" class="teamNameInput" maxlength="18" placeholder="Team A name" />
-    <input id="teamBNameInput" class="teamNameInput" maxlength="18" placeholder="Team B name" />
-  </div>
-
-  <div id="turnIndicator">Team A’s Turn</div>
-
-  <div id="scoreboard">
-    <div id="teamA" class="team active">
-      <span id="teamAName" class="teamNameLabel">Team A</span>
-      Score: <span id="scoreA">0</span>
-    </div>
-    <div id="teamB" class="team">
-      <span id="teamBName" class="teamNameLabel">Team B</span>
-      Score: <span id="scoreB">0</span>
+  <div id="introOverlay" class="show" aria-hidden="false">
+    <div class="overlayCard">
+      <img id="introLogo" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
+      <div id="introInstructions">1. Pick a Category &amp; Enter Team name (Optional).
+2. Tap "Tap to Start" &amp; Put phone on head to start.
+3. Your team will shout/act out clues for you guess the word.
+4. Tilt Up to Pass. Tilt Down for Correct. Have fun!
+Repost &amp; tag us @UrbanCharadesGame.</div>
+      <button id="enterAppBtn" class="gameBtn" style="background:#ffffff;color:#082643;width:100%;min-width:0;">Enter Game</button>
     </div>
   </div>
 
-  <div id="timer">Time: 60</div>
-
-  <div id="roundStage">
-    <div id="word">Choose a category to get started!</div>
-    <div id="actionFlash" aria-hidden="true">CORRECT</div>
+  <div id="header">
+    <img id="logoImage" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
   </div>
 
-  <div id="status"></div>
+  <audio id="soundCorrect" src="audio/correct.mp3" preload="auto"></audio>
+  <audio id="soundSkip" src="audio/skip.mp3" preload="auto"></audio>
+  <audio id="soundTimeUp" src="audio/timeup.mp3" preload="auto"></audio>
+  <audio id="soundStart" src="audio/start-round.mp3" preload="auto"></audio>
 
-  <div id="buttonsRow">
-    <button id="startBtn" class="gameBtn"
-            style="background:linear-gradient(180deg,#ff2f4b 0%,#c40022 100%);color:#fff;"
-            disabled
-    >Start Round</button>
-
-    <button id="recordToggleBtn" class="gameBtn" style="background:#ffffff;color:#082643;">Recording: Off</button>
-
-    <a id="downloadLink" class="gameBtn disabled" href="#"
-       style="display:none;background:#00ff00;color:#000;">Save Last Recording</a>
-
-    <button id="shareRecordingBtn" class="gameBtn" style="display:none;background:#ffffff;color:#082643;min-width:220px;">
-      Share Last Recording
-    </button>
+  <div id="foreheadOverlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTitle">📱 PLACE ON FOREHEAD</div>
+      <div id="overlaySub" class="overlaySub">Pass the phone to the player and place it on their forehead in any orientation.</div>
+      <div id="countNum">READY</div>
+      <div id="countHint">Tilt UP to pass • Tilt DOWN for correct.</div>
+    </div>
   </div>
 
-  <div id="recordPreviewWrap">
-    <video id="recordPreview" controls playsinline preload="metadata"></video>
-    <div id="recordPreviewNote">If Save does not work on Android, use Share Last Recording.</div>
+  <div id="winOverlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTitle">🏆 WINNER</div>
+      <div id="winTeam" class="overlaySub"></div>
+
+      <div style="margin:12px 0;font-weight:900;">
+        <span id="finalScoreA"></span><br/>
+        <span id="finalScoreB"></span>
+      </div>
+
+      <button id="playAgainBtn" class="gameBtn" style="background:#00ff00;color:#000;width:100%;min-width:0;">
+        Play Again
+      </button>
+
+      <button id="newGameBtn" class="gameBtn" style="background:#ffeb3b;color:#000;width:100%;min-width:0;">
+        New Game (Change Category)
+      </button>
+    </div>
   </div>
-</div>
 
-<script>
-  const startBtn = document.getElementById("startBtn");
-  const recordToggleBtn = document.getElementById("recordToggleBtn");
-  const downloadLink = document.getElementById("downloadLink");
-  const shareRecordingBtn = document.getElementById("shareRecordingBtn");
+  <div id="mainContent">
+    <div id="categoryTitle">Pick a Category</div>
+    <div id="categoryGrid"></div>
 
-  const wordEl = document.getElementById("word");
-  const timerEl = document.getElementById("timer");
-  const statusEl = document.getElementById("status");
-  const turnIndicator = document.getElementById("turnIndicator");
+    <div id="teamNamesRow">
+      <input id="teamANameInput" class="teamNameInput" maxlength="18" placeholder="Team A name" />
+      <input id="teamBNameInput" class="teamNameInput" maxlength="18" placeholder="Team B name" />
+    </div>
 
-  const scoreAEl = document.getElementById("scoreA");
-  const scoreBEl = document.getElementById("scoreB");
+    <div id="turnIndicator">Team A’s Turn</div>
 
-  const teamABox = document.getElementById("teamA");
-  const teamBBox = document.getElementById("teamB");
+    <div id="scoreboard">
+      <div id="teamA" class="team active">
+        <span id="teamAName" class="teamNameLabel">Team A</span>
+        Score: <span id="scoreA">0</span>
+      </div>
+      <div id="teamB" class="team">
+        <span id="teamBName" class="teamNameLabel">Team B</span>
+        Score: <span id="scoreB">0</span>
+      </div>
+    </div>
 
-  const teamANameInput = document.getElementById("teamANameInput");
-  const teamBNameInput = document.getElementById("teamBNameInput");
-  const teamANameLabel = document.getElementById("teamAName");
-  const teamBNameLabel = document.getElementById("teamBName");
+    <div id="timer">Time: 60</div>
 
-  const categoryGrid = document.getElementById("categoryGrid");
+    <div id="roundStage">
+      <button id="startPromptBtn" type="button">TAP TO START</button>
+      <div id="word">Choose a category to get started!</div>
+      <div id="actionFlash" aria-hidden="true">CORRECT</div>
+    </div>
 
-  const introOverlay = document.getElementById("introOverlay");
-  const enterAppBtn = document.getElementById("enterAppBtn");
+    <div id="status"></div>
 
-  const foreheadOverlay = document.getElementById("foreheadOverlay");
-  const overlaySub = document.getElementById("overlaySub");
-  const countNum = document.getElementById("countNum");
+    <div id="buttonsRow">
+      <button id="recordToggleBtn" class="gameBtn" style="background:#ffffff;color:#082643;">Recording: Off</button>
 
-  const winOverlay = document.getElementById("winOverlay");
-  const winTeamEl = document.getElementById("winTeam");
-  const finalScoreA = document.getElementById("finalScoreA");
-  const finalScoreB = document.getElementById("finalScoreB");
-  const playAgainBtn = document.getElementById("playAgainBtn");
-  const newGameBtn = document.getElementById("newGameBtn");
+      <a id="downloadLink" class="gameBtn disabled" href="#"
+         style="display:none;background:#00ff00;color:#000;">Save Last Recording</a>
 
-  const soundCorrect = document.getElementById("soundCorrect");
-  const soundSkip = document.getElementById("soundSkip");
-  const soundTimeUp = document.getElementById("soundTimeUp");
-  const soundStart = document.getElementById("soundStart");
+      <button id="shareRecordingBtn" class="gameBtn" style="display:none;background:#ffffff;color:#082643;min-width:220px;">
+        Share Last Recording
+      </button>
+    </div>
 
-  const actionFlash = document.getElementById("actionFlash");
-  const recordPreviewWrap = document.getElementById("recordPreviewWrap");
-  const recordPreview = document.getElementById("recordPreview");
+    <div id="recordPreviewWrap">
+      <video id="recordPreview" controls playsinline preload="metadata"></video>
+      <div id="recordPreviewNote">If Save does not work on Android, use Share Last Recording.</div>
+    </div>
+  </div>
 
-  const CATEGORY_DEFS = [
-    { key: "Urban Movies",        img: "img/urban-movies.png" },
-    { key: "Hip Hop / R&B",       img: "img/hip-hop-rnb.png" },
-    { key: "Famous Black People", img: "img/famous-black-people.png" },
-    { key: "Hood Creatures",      img: "img/hood-creatures.png" },
-    { key: "Act it out",          img: "img/act-it-out.png" },
-    { key: "Hood Slang/Quotes",   img: "img/hood-slang-quotes.png" }
-  ];
+  <script>
+    const recordToggleBtn = document.getElementById("recordToggleBtn");
+    const downloadLink = document.getElementById("downloadLink");
+    const shareRecordingBtn = document.getElementById("shareRecordingBtn");
+    const startPromptBtn = document.getElementById("startPromptBtn");
 
-  const wordsData = {
-    "Urban Movies": [
-      "Friday","Menace II Society","Boyz n the Hood","Juice","Paid in Full","Training Day","New Jack City","Set It Off","Baby Boy","Poetic Justice",
-      "Higher Learning","Love & Basketball","Belly","Above the Rim","Dead Presidents","The Wood","Brown Sugar","The Best Man","The Wash","Barbershop",
-      "Beauty Shop","ATL","Stomp the Yard","You Got Served","Drumline","Hustle & Flow","Soul Food",
-      "Don't Be a Menace","I'm Gonna Git You Sucka","Harlem Nights","Coming to America","Do the Right Thing","She's Gotta Have It","Malcolm X","Ray",
-      "What's Love Got to Do with It","Straight Outta Compton","All Eyez on Me","Notorious","Get Rich or Die Tryin","Dope","Moonlight","Fruitvale Station",
-      "Creed","Black Panther","The Hate U Give","Queen & Slim","If Beale Street Could Talk","Blindspotting","Sorry to Bother You","Southside with You",
-      "Crooklyn","The Five Heartbeats","Dreamgirls","Cadillac Records","Idlewild","Sparkle","Biker Boyz","Blue Hill Avenue","King of New York","Deep Cover",
-      "Sugar Hill","Jason's Lyric","Eve's Bayou","Waiting to Exhale","How Stella Got Her Groove Back","Booty Call","How to Be a Player",
-      "The Players Club","BAPS","Life","House Party","Class Act","The Last Dragon","Strictly Business","Boomerang","Vampire in Brooklyn",
-      "A Thin Line Between Love and Hate","Woo","The Brothers","Two Can Play That Game","Deliver Us from Eva","Think Like a Man","About Last Night",
-      "Girls Trip","The Photograph","Us","Get Out","Candyman","Tales from the Hood","Bones","Def Jam's How to Be a Player","Paper Soldiers",
-      "State Property","Killa Season","Shottas","Cooley High","Rush Hour"
-    ],
+    const wordEl = document.getElementById("word");
+    const timerEl = document.getElementById("timer");
+    const statusEl = document.getElementById("status");
+    const turnIndicator = document.getElementById("turnIndicator");
 
-    "Hip Hop / R&B": [
-      "Tupac Shakur","Notorious B.I.G.","Jay-Z","Nas","Snoop Dogg","Dr. Dre","Ice Cube","Kendrick Lamar","J. Cole","Drake",
-      "Kanye West","Lil Wayne","Andre 3000","Eminem","Rakim","Scarface","DMX","50 Cent","Busta Rhymes","Method Man",
-      "Redman","Ghostface Killah","Raekwon","Common","Mos Def","Talib Kweli","Lauryn Hill","Missy Elliott","Queen Latifah","Lil Kim",
-      "Foxy Brown","Nicki Minaj","Cardi B","Megan Thee Stallion","Eve","Remy Ma","Mary J. Blige","Aaliyah","Beyoncé","Rihanna",
-      "Usher","Chris Brown","Trey Songz","SZA","Summer Walker","Jhene Aiko","H.E.R.","Alicia Keys","Erykah Badu","Jill Scott",
-      "D'Angelo","Maxwell","Frank Ocean","The Weeknd","Brent Faiyaz","Giveon","Lucky Daye","SiR","T-Pain","Future",
-      "Young Thug","Travis Scott","21 Savage","Lil Baby","Gunna","Migos","Gucci Mane","Rick Ross","Meek Mill","Nipsey Hussle",
-      "Outkast","Wu-Tang Clan","Mobb Deep","A Tribe Called Quest","Public Enemy","N.W.A","Run-D.M.C.","Salt-N-Pepa","TLC","Destiny's Child",
-      "SWV","Xscape","New Edition","Boyz II Men","Jodeci","Dru Hill","112","Jagged Edge","The Roots"
-    ],
+    const scoreAEl = document.getElementById("scoreA");
+    const scoreBEl = document.getElementById("scoreB");
 
-    "Famous Black People": [
-      "Martin Luther King Jr.","Malcolm X","Rosa Parks","Barack Obama","Michelle Obama","Nelson Mandela","Harriet Tubman","Frederick Douglass","Maya Angelou","James Baldwin",
-      "Oprah Winfrey","Muhammad Ali","Michael Jordan","Kobe Bryant","LeBron James","Serena Williams","Venus Williams","Tiger Woods","Simone Biles","Jackie Robinson",
-      "Jesse Owens","Arthur Ashe","Hank Aaron","Will Smith","Denzel Washington","Samuel L. Jackson","Morgan Freeman","Viola Davis","Angela Bassett","Halle Berry",
-      "Eddie Murphy","Richard Pryor","Dave Chappelle","Kevin Hart","Whoopi Goldberg","Sidney Poitier","Chadwick Boseman","Michael B. Jordan","Taraji P. Henson","Issa Rae",
-      "Tyler Perry","Spike Lee","Jordan Peele","Ava DuVernay","Quincy Jones","Berry Gordy","Madame C.J. Walker","George Washington Carver","Thurgood Marshall","Shirley Chisholm",
-      "John Lewis","Stacey Abrams","Kamala Harris","Coretta Scott King","Sojourner Truth","Booker T. Washington","W.E.B. Du Bois","Marcus Garvey","Katherine Johnson","Dorothy Vaughan",
-      "Mary Jackson","Neil deGrasse Tyson","Toni Morrison","Langston Hughes","Zora Neale Hurston","Alice Walker","August Wilson","Lorraine Hansberry","Gordon Parks","Basquiat",
-      "Kehinde Wiley","Pharrell Williams","Virgil Abloh","Daymond John","Magic Johnson","Shaquille O'Neal","Stephen Curry","Floyd Mayweather","Mike Tyson","Prince",
-      "Michael Jackson","Stevie Wonder","Whitney Houston","Diana Ross","Tina Turner","Bob Marley","Lizzo"
-    ],
+    const teamABox = document.getElementById("teamA");
+    const teamBBox = document.getElementById("teamB");
 
-    "Hood Creatures": [
-      "Pigeon","Pitbull","Rat","Cat","Cockroach","Raccoon","Seagull","Squirrel","Possum","Poodle",
-      "Dog","Mosquito","Housefly","Mice","Shepherd","Chihuahua","Bulldog","Kitten","Raven","Crow",
-      "Sparrow","Mutt","Spider","Ant","Moth","Rooster","Bat","Frog","Cricket",
-      "Grasshopper","Bedbug","Termite","Silverfish","Waterbug","Wasp","Cicada","Bug","Skunk","Goose",
-      "Duck","Turtle","Snake","Bullmastiff","Rottweiler","Doberman","Boxer","Yorkie","Maltese","Frenchie",
-      "Beagle","Bloodhound","Coyote","Deer","Owl","Woodpecker","Gopher","Mole","Groundhog","Flea",
-      "Tick","Earwig","Centipede","Millipede","Snail","Slug","Earthworm","Dragonfly","Firefly","Ladybug",
-      "Hornet","Honeybee","Bumblebee","Fly","Gnat","Leech","Tadpole","Crayfish","Carp","Catfish",
-      "Duckling","Stork","Heron","Falcon","Hawk","Vulture","Buzzard","Husky","Great Dane","Labrador"
-    ],
+    const teamANameInput = document.getElementById("teamANameInput");
+    const teamBNameInput = document.getElementById("teamBNameInput");
+    const teamANameLabel = document.getElementById("teamAName");
+    const teamBNameLabel = document.getElementById("teamBName");
 
-    "Act it out": [
-      "Play Spades","Make it rain","Shuffle cards","Deal cards",
-      "Slam dominoes","Twerk",
-      "Throw dice","Roll dice","Shake dice","Electric Slide",
-      "Barber","Check hairline","Spin chair","Fresh fade",
-      "Brush waves","Tie durag","Adjust durag","Put bonnet",
-      "Lay edges","Braid hair","Fix braids","Retwist locs","Pick afro",
-      "Beard lineup","Trim beard","Brush beard",
-      "Put lashes","Fix lashes","Apply lipgloss","Gloss poppin",
-      "Put hoop earrings","Fix necklace","Put chain on",
-      "Check fit","Lace sneakers","Tie Jordans","Wipe sneakers","Clean sneakers",
-      "Snap selfie","Take selfie","Group selfie","Photo pose",
-      "Open Instagram","Post story","Send DM","Like a pic",
-      "Open Snapchat","Send snap","Snap streak","Filter selfie",
-      "Scroll TikTok","Record TikTok","Set tripod","Ring light",
-      "Answer FaceTime","Video call","Hang up","Text back","Send emoji","Drop location",
-      "Turn music up","Turn music down","Bluetooth speaker","Pair Bluetooth",
-      "Air rap","Freestyle rap","Sing hook","Mic drop","Hype crowd",
-      "Dance battle","Two step","Cupid shuffle",
-      "Do the Dougie","Crank that","Stanky leg","Hit the Woah","Hit the Quan","Do Nae Nae",
-      "Pop lock","Body roll","Shoulder roll","Shoulder shrug","Finger snap",
-      "Side eye","Eye roll","Throw shade","Mean mug",
-      "High five","Fist bump","Dap handshake","Fist pump","Head nod","Slow clap",
-      "Cookout grill","Flip burgers","Season chicken","Stir greens","Mix Kool-Aid",
-      "Fix plate","Grab plate","Pass plate","Eat wings","Eat pizza",
-      "Pop popcorn","Crunch chips","Chew gum","Blow bubble",
-      "Sip tea","Drink water","Pour juice","Open soda","Crack soda",
-      "Wait for bus","Catch the bus","Swipe transit","Hail rideshare",
-      "Start car","Park car","Parallel park","Pump gas","Check gas",
-      "Unlock door","Lock door","Ring doorbell","Knock door","Peek window",
-      "Open mailbox","Check mail","Grab package","Sign receipt",
-      "Pay bill","Swipe card","Tap card","Count cash","Split bill",
-      "Charge phone","Plug charger","Low battery","Check notifications",
-      "Scan barcode","Bag groceries","Push cart","Carry bags"
-    ],
+    const categoryGrid = document.getElementById("categoryGrid");
 
-    "Hood Slang/Quotes": [
-      "Finna","Cap","No cap","Bet","Pull up","On god","Deadass","Aight","Facts",
-      "It's the ___","Periodt","Chile","Glow up","Bussin","Caught in 4k","Simp","Stan",
-      "Vibe check","Tea","Snatched","Lowkey","Highkey","Secure bag","Rent free","Say less",
-      "Guap","Bread","Clout","Drip","Ghosting","GOAT","Gucci","Keep it 100","Lit",
-      "Opp","Rizz","Salty","Shade","Shook","Slay","Squad","Sus",
-      "Woke","Yeet","I'm weak","Straight up","For real","Word is bond","My bad","Don't play",
-      "On my mama","Real rap","I'm hip","Pause","Brick","Mula","Paper","Cheddar","Scrilla",
-      "Benjamins","Trap","The plug","Finesse","Flex","Hype","Doing too much","Pressed","Bugging","Tripping","Wilding",
-      "It's giving","Valid","Big mad","Stay woke","No kizzy","Say that","Straight facts","Bet that"
-    ]
-  };
+    const introOverlay = document.getElementById("introOverlay");
+    const enterAppBtn = document.getElementById("enterAppBtn");
 
-  wordsData["Urban Movies"].push(
-    "One Night in Miami","Judas and the Black Messiah","King Richard","The Woman King","They Cloned Tyrone",
-    "Spider-Man: Into the Spider-Verse","The Harder They Fall","You People","The Book of Clarence","Candy Cane Lane",
-    "A Thousand and One","Rye Lane","The Blackening","Origin",
-    "Respect","Till","Passing","Rustin","The Inspection","Chevalier","Fatherhood","Beast","Emancipation","Little",
-    "Bad Hair","Jingle Jangle","Beats","See You Yesterday","Bruised","Really Love","Sylvie's Love","Uncle Drew",
-    "Miss Juneteenth","On the Come Up","A Journal for Jordan","Praise This","The Burial","American Fiction",
-    "Dolemite Is My Name","Harriet","Nope","The Last Black Man in San Francisco",
-    "Sinners","Big Momma's House","The Temptations","Django Unchained",
-    "Love Jones","Hoodlum","The Great Debaters","The Preacher's Wife",
-    "Space Jam","White Men Can't Jump"
-  );
+    const foreheadOverlay = document.getElementById("foreheadOverlay");
+    const overlaySub = document.getElementById("overlaySub");
+    const countNum = document.getElementById("countNum");
 
-  wordsData["Hip Hop / R&B"].push(
-    "LL Cool J","Ludacris","T.I.","Jeezy","Nelly","Fabolous","Jadakiss","Cam'ron","Wale","Big Sean",
-    "Kid Cudi","Tyler, The Creator","A$AP Rocky","A$AP Ferg","Chance the Rapper","Joey Bada$$","Vince Staples",
-    "Doja Cat","GloRilla","Sexyy Red","Latto","Flo Milli","Coi Leray","Lola Brooke","Muni Long","Coco Jones",
-    "Victoria Monét","Janelle Monáe","Miguel","Kehlani","Tems","Ayra Starr","Tyla","Ella Mai","Smino","Saba",
-    "Cordae","Tobe Nwigwe","BLXST","Leon Thomas","Tinashe","Normani","PARTYNEXTDOOR","Bryson Tiller",
-    "Monica","Brandy","Keyshia Cole","Ashanti","Ari Lennox","Ty Dolla $ign"
-  );
+    const winOverlay = document.getElementById("winOverlay");
+    const winTeamEl = document.getElementById("winTeam");
+    const finalScoreA = document.getElementById("finalScoreA");
+    const finalScoreB = document.getElementById("finalScoreB");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    const newGameBtn = document.getElementById("newGameBtn");
 
-  wordsData["Famous Black People"].push(
-    "Aretha Franklin","Nina Simone","Marvin Gaye","Billie Holiday","Ella Fitzgerald","James Brown","Ray Charles","Louis Armstrong","Duke Ellington","Nat King Cole",
-    "B.B. King","Hattie McDaniel","Dorothy Dandridge","Cicely Tyson","Regina King","Octavia Butler","bell hooks","Mae Jemison","Garrett Morgan","Elijah McCoy",
-    "Benjamin Banneker","Charles Drew","Percy Julian","Guion Bluford","Ida B. Wells","Ruby Bridges","Fannie Lou Hamer","Bayard Rustin","Medgar Evers","Angela Davis",
-    "Huey P. Newton","Stokely Carmichael","Bessie Coleman","Colin Powell","Condoleezza Rice","James Earl Jones",
-    "Deion Sanders","Barry Sanders","Simone Manuel","Allyson Felix","Gabby Douglas","Iman","Naomi Campbell","Tyra Banks",
-    "Donald Glover","John Boyega","Regina Hall","Nia Long","Kerry Washington","Zendaya"
-  );
+    const soundCorrect = document.getElementById("soundCorrect");
+    const soundSkip = document.getElementById("soundSkip");
+    const soundTimeUp = document.getElementById("soundTimeUp");
+    const soundStart = document.getElementById("soundStart");
 
-  wordsData["Hood Creatures"].push(
-    "Pug","Corgi","Shih Tzu","Dachshund","Pomeranian","Mastiff","Cane Corso","Terrier","Pointer","Spaniel",
-    "Retriever","Akita","Schnauzer","Greyhound","Whippet","Ferret","Hamster","Guinea pig","Parakeet","Canary",
-    "Robin","Cardinal","Blue Jay","Finch","Hummingbird","Mockingbird","Starling","Grackle","Blackbird","Chipmunk",
-    "Rabbit","Bunny","Fox","Salamander","Gecko","Iguana","Toad","Newt","Mantis","Beetle",
-    "Junebug","Caterpillar","Butterfly","Aphid","Weevil","Locust","Midge","Bobcat","Roly-poly","Pelican"
-  );
+    const actionFlash = document.getElementById("actionFlash");
+    const recordPreviewWrap = document.getElementById("recordPreviewWrap");
+    const recordPreview = document.getElementById("recordPreview");
 
-  wordsData["Act it out"].push(
-    "Hand wave","Peace sign","Thumbs up","Play drums","Beat box","DJ scratch","Play fight","Sing","Flex dance","Crowd wave",
-    "Barbecue","Phone flashlight","Mute phone","Argue","Catwalk","Post caption","Add hashtags","Check messages","Clear notifications","Pump gas",
-    "Hide and seek","Decline call","Play music","Mute","Change song","Volume up","Volume down","Share video","Send link","Copy link",
-    "Order takeout","Drive thru","Find parking","Moon walk","Window shop","Put on shoes","Return item","Receipt check","Self checkout","Fight",
-    "Basketball dribble","Shoot hoop","Layup shot","Crossover move","Break ankles","Fast break","Catch football","Throw football","Kick ball","Jump shot"
-  );
+    const CATEGORY_DEFS = [
+      { key: "Urban Movies",        img: "img/urban-movies.png" },
+      { key: "Hip Hop / R&B",       img: "img/hip-hop-rnb.png" },
+      { key: "Famous Black People", img: "img/famous-black-people.png" },
+      { key: "Hood Creatures",      img: "img/hood-creatures.png" },
+      { key: "Act it out",          img: "img/act-it-out.png" },
+      { key: "Hood Slang/Quotes",   img: "img/hood-slang-quotes.png" }
+    ];
 
-  wordsData["Hood Slang/Quotes"].push(
-    "Ate that","Big vibes","Bossed up","Actin brand new","Outta pocket","Pipe down","Sit down","Talk your talk","Pop off","Hold me down",
-    "Say word","Word","On point","We outside","Outside","Big steppa","Main character","It's up","Heard you","Slide through",
-    "Run it","Run me that","Check the fit","What's tea","Whole mood","Ain't no way","Not too much","Clock it","Stand on business","On timing",
-    "Poppin","Too clean","Big energy","Low vibration","High vibration","For the streets","Stay dangerous","Keep that","Don't trip","You good",
-    "Tap in","Tapped in","Locked in","Get active","Cut up","Chill out","Go crazy","Too tough","Big pressure","No worries"
-  );
+    const wordsData = {
+      "Urban Movies": [
+        "Friday","Menace II Society","Boyz n the Hood","Juice","Paid in Full","Training Day","New Jack City","Set It Off","Baby Boy","Poetic Justice",
+        "Higher Learning","Love & Basketball","Belly","Above the Rim","Dead Presidents","The Wood","Brown Sugar","The Best Man","The Wash","Barbershop",
+        "Beauty Shop","ATL","Stomp the Yard","You Got Served","Drumline","Hustle & Flow","Soul Food",
+        "Don't Be a Menace","I'm Gonna Git You Sucka","Harlem Nights","Coming to America","Do the Right Thing","She's Gotta Have It","Malcolm X","Ray",
+        "What's Love Got to Do with It","Straight Outta Compton","All Eyez on Me","Notorious","Get Rich or Die Tryin","Dope","Moonlight","Fruitvale Station",
+        "Creed","Black Panther","The Hate U Give","Queen & Slim","If Beale Street Could Talk","Blindspotting","Sorry to Bother You","Southside with You",
+        "Crooklyn","The Five Heartbeats","Dreamgirls","Cadillac Records","Idlewild","Sparkle","Biker Boyz","Blue Hill Avenue","King of New York","Deep Cover",
+        "Sugar Hill","Jason's Lyric","Eve's Bayou","Waiting to Exhale","How Stella Got Her Groove Back","Booty Call","How to Be a Player",
+        "The Players Club","BAPS","Life","House Party","Class Act","The Last Dragon","Strictly Business","Boomerang","Vampire in Brooklyn",
+        "A Thin Line Between Love and Hate","Woo","The Brothers","Two Can Play That Game","Deliver Us from Eva","Think Like a Man","About Last Night",
+        "Girls Trip","The Photograph","Us","Get Out","Candyman","Tales from the Hood","Bones","Def Jam's How to Be a Player","Paper Soldiers",
+        "State Property","Killa Season","Shottas","Cooley High","Rush Hour"
+      ],
 
-  (function cleanMoviesAndDedupe(){
-    const removeMovieTitles = new Set([
-      "Next Friday",
-      "Friday After Next",
-      "House Party 2",
-      "House Party 3",
-      "Creed II",
-      "Creed III",
-      "Black Panther: Wakanda Forever",
-      "Spider-Man: Across the Spider-Verse",
-      "Coming 2 America",
-      "Space Jam: A New Legacy",
-      "House Party (2023)",
-      "White Men Can't Jump (2023)"
-    ]);
+      "Hip Hop / R&B": [
+        "Tupac Shakur","Notorious B.I.G.","Jay-Z","Nas","Snoop Dogg","Dr. Dre","Ice Cube","Kendrick Lamar","J. Cole","Drake",
+        "Kanye West","Lil Wayne","Andre 3000","Eminem","Rakim","Scarface","DMX","50 Cent","Busta Rhymes","Method Man",
+        "Redman","Ghostface Killah","Raekwon","Common","Mos Def","Talib Kweli","Lauryn Hill","Missy Elliott","Queen Latifah","Lil Kim",
+        "Foxy Brown","Nicki Minaj","Cardi B","Megan Thee Stallion","Eve","Remy Ma","Mary J. Blige","Aaliyah","Beyoncé","Rihanna",
+        "Usher","Chris Brown","Trey Songz","SZA","Summer Walker","Jhene Aiko","H.E.R.","Alicia Keys","Erykah Badu","Jill Scott",
+        "D'Angelo","Maxwell","Frank Ocean","The Weeknd","Brent Faiyaz","Giveon","Lucky Daye","SiR","T-Pain","Future",
+        "Young Thug","Travis Scott","21 Savage","Lil Baby","Gunna","Migos","Gucci Mane","Rick Ross","Meek Mill","Nipsey Hussle",
+        "Outkast","Wu-Tang Clan","Mobb Deep","A Tribe Called Quest","Public Enemy","N.W.A","Run-D.M.C.","Salt-N-Pepa","TLC","Destiny's Child",
+        "SWV","Xscape","New Edition","Boyz II Men","Jodeci","Dru Hill","112","Jagged Edge","The Roots"
+      ],
 
-    wordsData["Urban Movies"] = (wordsData["Urban Movies"] || []).filter(x => !removeMovieTitles.has(x));
+      "Famous Black People": [
+        "Martin Luther King Jr.","Malcolm X","Rosa Parks","Barack Obama","Michelle Obama","Nelson Mandela","Harriet Tubman","Frederick Douglass","Maya Angelou","James Baldwin",
+        "Oprah Winfrey","Muhammad Ali","Michael Jordan","Kobe Bryant","LeBron James","Serena Williams","Venus Williams","Tiger Woods","Simone Biles","Jackie Robinson",
+        "Jesse Owens","Arthur Ashe","Hank Aaron","Will Smith","Denzel Washington","Samuel L. Jackson","Morgan Freeman","Viola Davis","Angela Bassett","Halle Berry",
+        "Eddie Murphy","Richard Pryor","Dave Chappelle","Kevin Hart","Whoopi Goldberg","Sidney Poitier","Chadwick Boseman","Michael B. Jordan","Taraji P. Henson","Issa Rae",
+        "Tyler Perry","Spike Lee","Jordan Peele","Ava DuVernay","Quincy Jones","Berry Gordy","Madame C.J. Walker","George Washington Carver","Thurgood Marshall","Shirley Chisholm",
+        "John Lewis","Stacey Abrams","Kamala Harris","Coretta Scott King","Sojourner Truth","Booker T. Washington","W.E.B. Du Bois","Marcus Garvey","Katherine Johnson","Dorothy Vaughan",
+        "Mary Jackson","Neil deGrasse Tyson","Toni Morrison","Langston Hughes","Zora Neale Hurston","Alice Walker","August Wilson","Lorraine Hansberry","Gordon Parks","Basquiat",
+        "Kehinde Wiley","Pharrell Williams","Virgil Abloh","Daymond John","Magic Johnson","Shaquille O'Neal","Stephen Curry","Floyd Mayweather","Mike Tyson","Prince",
+        "Michael Jackson","Stevie Wonder","Whitney Houston","Diana Ross","Tina Turner","Bob Marley","Lizzo"
+      ],
 
-    Object.keys(wordsData).forEach(k=>{
-      wordsData[k] = [...new Set(wordsData[k] || [])];
-    });
-  })();
+      "Hood Creatures": [
+        "Pigeon","Pitbull","Rat","Cat","Cockroach","Raccoon","Seagull","Squirrel","Possum","Poodle",
+        "Dog","Mosquito","Housefly","Mice","Shepherd","Chihuahua","Bulldog","Kitten","Raven","Crow",
+        "Sparrow","Mutt","Spider","Ant","Moth","Rooster","Bat","Frog","Cricket",
+        "Grasshopper","Bedbug","Termite","Silverfish","Waterbug","Wasp","Cicada","Bug","Skunk","Goose",
+        "Duck","Turtle","Snake","Bullmastiff","Rottweiler","Doberman","Boxer","Yorkie","Maltese","Frenchie",
+        "Beagle","Bloodhound","Coyote","Deer","Owl","Woodpecker","Gopher","Mole","Groundhog","Flea",
+        "Tick","Earwig","Centipede","Millipede","Snail","Slug","Earthworm","Dragonfly","Firefly","Ladybug",
+        "Hornet","Honeybee","Bumblebee","Fly","Gnat","Leech","Tadpole","Crayfish","Carp","Catfish",
+        "Duckling","Stork","Heron","Falcon","Hawk","Vulture","Buzzard","Husky","Great Dane","Labrador"
+      ],
 
-  let selectedCategory = "";
-  let wordPool = [];
-  let teamTurn = "A";
-  let teamAScore = 0;
-  let teamBScore = 0;
+      "Act it out": [
+        "Play Spades","Make it rain","Shuffle cards","Deal cards",
+        "Slam dominoes","Twerk",
+        "Throw dice","Roll dice","Shake dice","Electric Slide",
+        "Barber","Check hairline","Spin chair","Fresh fade",
+        "Brush waves","Tie durag","Adjust durag","Put bonnet",
+        "Lay edges","Braid hair","Fix braids","Retwist locs","Pick afro",
+        "Beard lineup","Trim beard","Brush beard",
+        "Put lashes","Fix lashes","Apply lipgloss","Gloss poppin",
+        "Put hoop earrings","Fix necklace","Put chain on",
+        "Check fit","Lace sneakers","Tie Jordans","Wipe sneakers","Clean sneakers",
+        "Snap selfie","Take selfie","Group selfie","Photo pose",
+        "Open Instagram","Post story","Send DM","Like a pic",
+        "Open Snapchat","Send snap","Snap streak","Filter selfie",
+        "Scroll TikTok","Record TikTok","Set tripod","Ring light",
+        "Answer FaceTime","Video call","Hang up","Text back","Send emoji","Drop location",
+        "Turn music up","Turn music down","Bluetooth speaker","Pair Bluetooth",
+        "Air rap","Freestyle rap","Sing hook","Mic drop","Hype crowd",
+        "Dance battle","Two step","Cupid shuffle",
+        "Do the Dougie","Crank that","Stanky leg","Hit the Woah","Hit the Quan","Do Nae Nae",
+        "Pop lock","Body roll","Shoulder roll","Shoulder shrug","Finger snap",
+        "Side eye","Eye roll","Throw shade","Mean mug",
+        "High five","Fist bump","Dap handshake","Fist pump","Head nod","Slow clap",
+        "Cookout grill","Flip burgers","Season chicken","Stir greens","Mix Kool-Aid",
+        "Fix plate","Grab plate","Pass plate","Eat wings","Eat pizza",
+        "Pop popcorn","Crunch chips","Chew gum","Blow bubble",
+        "Sip tea","Drink water","Pour juice","Open soda","Crack soda",
+        "Wait for bus","Catch the bus","Swipe transit","Hail rideshare",
+        "Start car","Park car","Parallel park","Pump gas","Check gas",
+        "Unlock door","Lock door","Ring doorbell","Knock door","Peek window",
+        "Open mailbox","Check mail","Grab package","Sign receipt",
+        "Pay bill","Swipe card","Tap card","Count cash","Split bill",
+        "Charge phone","Plug charger","Low battery","Check notifications",
+        "Scan barcode","Bag groceries","Push cart","Carry bags"
+      ],
 
-  let timeLeft = 60;
-  let timerInterval = null;
+      "Hood Slang/Quotes": [
+        "Finna","Cap","No cap","Bet","Pull up","On god","Deadass","Aight","Facts",
+        "It's the ___","Periodt","Chile","Glow up","Bussin","Caught in 4k","Simp","Stan",
+        "Vibe check","Tea","Snatched","Lowkey","Highkey","Secure bag","Rent free","Say less",
+        "Guap","Bread","Clout","Drip","Ghosting","GOAT","Gucci","Keep it 100","Lit",
+        "Opp","Rizz","Salty","Shade","Shook","Slay","Squad","Sus",
+        "Woke","Yeet","I'm weak","Straight up","For real","Word is bond","My bad","Don't play",
+        "On my mama","Real rap","I'm hip","Pause","Brick","Mula","Paper","Cheddar","Scrilla",
+        "Benjamins","Trap","The plug","Finesse","Flex","Hype","Doing too much","Pressed","Bugging","Tripping","Wilding",
+        "It's giving","Valid","Big mad","Stay woke","No kizzy","Say that","Straight facts","Bet that"
+      ]
+    };
 
-  let roundActive = false;
-  let matchOver = false;
-  let preRoundActive = false;
-  let lastActionAt = 0;
+    wordsData["Urban Movies"].push(
+      "One Night in Miami","Judas and the Black Messiah","King Richard","The Woman King","They Cloned Tyrone",
+      "Spider-Man: Into the Spider-Verse","The Harder They Fall","You People","The Book of Clarence","Candy Cane Lane",
+      "A Thousand and One","Rye Lane","The Blackening","Origin",
+      "Respect","Till","Passing","Rustin","The Inspection","Chevalier","Fatherhood","Beast","Emancipation","Little",
+      "Bad Hair","Jingle Jangle","Beats","See You Yesterday","Bruised","Really Love","Sylvie's Love","Uncle Drew",
+      "Miss Juneteenth","On the Come Up","A Journal for Jordan","Praise This","The Burial","American Fiction",
+      "Dolemite Is My Name","Harriet","Nope","The Last Black Man in San Francisco",
+      "Sinners","Big Momma's House","The Temptations","Django Unchained",
+      "Love Jones","Hoodlum","The Great Debaters","The Preacher's Wife",
+      "Space Jam","White Men Can't Jump"
+    );
 
-  let countdownTimers = [];
-  let audioCtx = null;
+    wordsData["Hip Hop / R&B"].push(
+      "LL Cool J","Ludacris","T.I.","Jeezy","Nelly","Fabolous","Jadakiss","Cam'ron","Wale","Big Sean",
+      "Kid Cudi","Tyler, The Creator","A$AP Rocky","A$AP Ferg","Chance the Rapper","Joey Bada$$","Vince Staples",
+      "Doja Cat","GloRilla","Sexyy Red","Latto","Flo Milli","Coi Leray","Lola Brooke","Muni Long","Coco Jones",
+      "Victoria Monét","Janelle Monáe","Miguel","Kehlani","Tems","Ayra Starr","Tyla","Ella Mai","Smino","Saba",
+      "Cordae","Tobe Nwigwe","BLXST","Leon Thomas","Tinashe","Normani","PARTYNEXTDOOR","Bryson Tiller",
+      "Monica","Brandy","Keyshia Cole","Ashanti","Ari Lennox","Ty Dolla $ign"
+    );
 
-  let recordEnabled = true;
-  let recordStream = null;
-  let mediaRecorder = null;
-  let mediaChunks = [];
-  let lastRecordingUrl = "";
-  let lastRecordingBlob = null;
-  let lastRecordingMimeType = "video/webm";
+    wordsData["Famous Black People"].push(
+      "Aretha Franklin","Nina Simone","Marvin Gaye","Billie Holiday","Ella Fitzgerald","James Brown","Ray Charles","Louis Armstrong","Duke Ellington","Nat King Cole",
+      "B.B. King","Hattie McDaniel","Dorothy Dandridge","Cicely Tyson","Regina King","Octavia Butler","bell hooks","Mae Jemison","Garrett Morgan","Elijah McCoy",
+      "Benjamin Banneker","Charles Drew","Percy Julian","Guion Bluford","Ida B. Wells","Ruby Bridges","Fannie Lou Hamer","Bayard Rustin","Medgar Evers","Angela Davis",
+      "Huey P. Newton","Stokely Carmichael","Bessie Coleman","Colin Powell","Condoleezza Rice","James Earl Jones",
+      "Deion Sanders","Barry Sanders","Simone Manuel","Allyson Felix","Gabby Douglas","Iman","Naomi Campbell","Tyra Banks",
+      "Donald Glover","John Boyega","Regina Hall","Nia Long","Kerry Washington","Zendaya"
+    );
 
-  let tiltListening = false;
-  let latestTiltValue = null;
-  let tiltBaseline = null;
-  let tiltArmed = true;
-  let lastTiltActionAt = 0;
+    wordsData["Hood Creatures"].push(
+      "Pug","Corgi","Shih Tzu","Dachshund","Pomeranian","Mastiff","Cane Corso","Terrier","Pointer","Spaniel",
+      "Retriever","Akita","Schnauzer","Greyhound","Whippet","Ferret","Hamster","Guinea pig","Parakeet","Canary",
+      "Robin","Cardinal","Blue Jay","Finch","Hummingbird","Mockingbird","Starling","Grackle","Blackbird","Chipmunk",
+      "Rabbit","Bunny","Fox","Salamander","Gecko","Iguana","Toad","Newt","Mantis","Beetle",
+      "Junebug","Caterpillar","Butterfly","Aphid","Weevil","Locust","Midge","Bobcat","Roly-poly","Pelican"
+    );
 
-  let actionFlashTimer = null;
-  let transitionLock = false;
-  const TRANSITION_DELAY = 1200;
+    wordsData["Act it out"].push(
+      "Hand wave","Peace sign","Thumbs up","Play drums","Beat box","DJ scratch","Play fight","Sing","Flex dance","Crowd wave",
+      "Barbecue","Phone flashlight","Mute phone","Argue","Catwalk","Post caption","Add hashtags","Check messages","Clear notifications","Pump gas",
+      "Hide and seek","Decline call","Play music","Mute","Change song","Volume up","Volume down","Share video","Send link","Copy link",
+      "Order takeout","Drive thru","Find parking","Moon walk","Window shop","Put on shoes","Return item","Receipt check","Self checkout","Fight",
+      "Basketball dribble","Shoot hoop","Layup shot","Crossover move","Break ankles","Fast break","Catch football","Throw football","Kick ball","Jump shot"
+    );
 
-  let waitingForForeheadPose = false;
-  let foreheadStableSince = 0;
-  const FOREHEAD_READY_MIN_MS = 500;
-  const FOREHEAD_BETA_MIN = 45;
-  const FOREHEAD_BETA_MAX = 135;
+    wordsData["Hood Slang/Quotes"].push(
+      "Ate that","Big vibes","Bossed up","Actin brand new","Outta pocket","Pipe down","Sit down","Talk your talk","Pop off","Hold me down",
+      "Say word","Word","On point","We outside","Outside","Big steppa","Main character","It's up","Heard you","Slide through",
+      "Run it","Run me that","Check the fit","What's tea","Whole mood","Ain't no way","Not too much","Clock it","Stand on business","On timing",
+      "Poppin","Too clean","Big energy","Low vibration","High vibration","For the streets","Stay dangerous","Keep that","Don't trip","You good",
+      "Tap in","Tapped in","Locked in","Get active","Cut up","Chill out","Go crazy","Too tough","Big pressure","No worries"
+    );
 
-  const TILT_THRESHOLD = 22;
-  const TILT_RESET = 10;
-  const TILT_COOLDOWN = 900;
+    (function cleanMoviesAndDedupe(){
+      const removeMovieTitles = new Set([
+        "Next Friday",
+        "Friday After Next",
+        "House Party 2",
+        "House Party 3",
+        "Creed II",
+        "Creed III",
+        "Black Panther: Wakanda Forever",
+        "Spider-Man: Across the Spider-Verse",
+        "Coming 2 America",
+        "Space Jam: A New Legacy",
+        "House Party (2023)",
+        "White Men Can't Jump (2023)"
+      ]);
 
-  function safePlay(a){
-    try{ a.currentTime = 0; a.play().catch(()=>{}); }catch(e){}
-  }
+      wordsData["Urban Movies"] = (wordsData["Urban Movies"] || []).filter(x => !removeMovieTitles.has(x));
 
-  function ensureAudioContext(){
-    try{
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if(!AC) return null;
-      if(!audioCtx) audioCtx = new AC();
-      if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
-      return audioCtx;
-    }catch(e){
-      return null;
+      Object.keys(wordsData).forEach(k=>{
+        wordsData[k] = [...new Set(wordsData[k] || [])];
+      });
+    })();
+
+    let selectedCategory = "";
+    let wordPool = [];
+    let teamTurn = "A";
+    let teamAScore = 0;
+    let teamBScore = 0;
+
+    let timeLeft = 60;
+    let timerInterval = null;
+
+    let roundActive = false;
+    let matchOver = false;
+    let preRoundActive = false;
+    let lastActionAt = 0;
+
+    let countdownTimers = [];
+    let audioCtx = null;
+
+    let recordEnabled = true;
+    let recordStream = null;
+    let mediaRecorder = null;
+    let mediaChunks = [];
+    let lastRecordingUrl = "";
+    let lastRecordingBlob = null;
+    let lastRecordingMimeType = "video/webm";
+
+    let tiltListening = false;
+    let latestTiltValue = null;
+    let tiltBaseline = null;
+    let tiltArmed = true;
+    let lastTiltActionAt = 0;
+
+    let actionFlashTimer = null;
+    let transitionLock = false;
+    const TRANSITION_DELAY = 1200;
+
+    let waitingForForeheadPose = false;
+    let foreheadStableSince = 0;
+    const FOREHEAD_READY_MIN_MS = 500;
+    const FOREHEAD_BETA_MIN = 45;
+    const FOREHEAD_BETA_MAX = 135;
+
+    const TILT_THRESHOLD = 16;
+    const TILT_RESET = 8;
+    const TILT_COOLDOWN = 700;
+
+    function safePlay(a){
+      try{ a.currentTime = 0; a.play().catch(()=>{}); }catch(e){}
     }
-  }
 
-  function beep(freq=880, duration=170){
-    try{
-      const ctx = ensureAudioContext();
-      if(!ctx) return;
+    function ensureAudioContext(){
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        if(!audioCtx) audioCtx = new AC();
+        if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+        return audioCtx;
+      }catch(e){
+        return null;
+      }
+    }
 
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.value = 0.0001;
+    function beep(freq=880, duration=170){
+      try{
+        const ctx = ensureAudioContext();
+        if(!ctx) return;
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      const now = ctx.currentTime;
-      osc.start(now);
-      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / 1000);
-      osc.stop(now + duration / 1000 + 0.02);
-    }catch(e){}
-  }
-
-  function playIntroChime(){
-    try{
-      const ctx = ensureAudioContext();
-      if(!ctx) return;
-
-      const notes = [523.25, 659.25, 783.99];
-      notes.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
         osc.frequency.value = freq;
         gain.gain.value = 0.0001;
+
         osc.connect(gain);
         gain.connect(ctx.destination);
 
-        const start = ctx.currentTime + (i * 0.12);
-        osc.start(start);
-        gain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.20);
-        osc.stop(start + 0.22);
-      });
-    }catch(e){}
-  }
-
-  function clearCountdownTimers(){
-    countdownTimers.forEach(t => clearTimeout(t));
-    countdownTimers = [];
-  }
-
-  function sanitizeTeamName(v){ return (v || "").trim().slice(0,18); }
-
-  function applyTeamNames(){
-    const a = sanitizeTeamName(teamANameInput.value) || "Team A";
-    const b = sanitizeTeamName(teamBNameInput.value) || "Team B";
-    teamANameLabel.textContent = a;
-    teamBNameLabel.textContent = b;
-
-    if(sanitizeTeamName(teamANameInput.value)) teamANameInput.classList.add("hidden");
-    if(sanitizeTeamName(teamBNameInput.value)) teamBNameInput.classList.add("hidden");
-    updateTurnUI();
-  }
-
-  function editTeam(team){
-    if(team === "A"){
-      teamANameInput.classList.remove("hidden");
-      teamANameInput.value = (teamANameLabel.textContent || "").replace(/^Team A$/,"");
-      teamANameInput.focus();
-      teamANameInput.select();
-    }else{
-      teamBNameInput.classList.remove("hidden");
-      teamBNameInput.value = (teamBNameLabel.textContent || "").replace(/^Team B$/,"");
-      teamBNameInput.focus();
-      teamBNameInput.select();
-    }
-  }
-
-  function updateScores(){
-    scoreAEl.textContent = teamAScore;
-    scoreBEl.textContent = teamBScore;
-  }
-
-  function currentTeamName(){
-    return teamTurn === "A" ? teamANameLabel.textContent : teamBNameLabel.textContent;
-  }
-
-  function updateTurnUI(){
-    turnIndicator.textContent = `${currentTeamName()}’s Turn`;
-    teamABox.classList.toggle("active", teamTurn === "A");
-    teamBBox.classList.toggle("active", teamTurn === "B");
-  }
-
-  function shuffle(a){
-    for(let i=a.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [a[i],a[j]]=[a[j],a[i]];
-    }
-    return a;
-  }
-
-  function restockPool(){
-    wordPool = shuffle([...(wordsData[selectedCategory] || [])]);
-  }
-
-  function drawWord(){
-    if(!wordPool.length) restockPool();
-    return wordPool.pop() || "—";
-  }
-
-  function setFocusMode(on){
-    document.body.classList.toggle("roundFocus", !!on);
-  }
-
-  function updateButtons(){
-    const introShowing = introOverlay.classList.contains("show");
-    startBtn.disabled = !selectedCategory || roundActive || matchOver || preRoundActive || introShowing;
-  }
-
-  function showActionFlash(type){
-    clearTimeout(actionFlashTimer);
-    actionFlash.classList.remove("correct", "pass", "show");
-
-    if(type === "correct"){
-      actionFlash.textContent = "CORRECT";
-      actionFlash.classList.add("correct");
-    }else{
-      actionFlash.textContent = "PASS";
-      actionFlash.classList.add("pass");
+        const now = ctx.currentTime;
+        osc.start(now);
+        gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / 1000);
+        osc.stop(now + duration / 1000 + 0.02);
+      }catch(e){}
     }
 
-    wordEl.style.display = "none";
-    actionFlash.classList.add("show");
-  }
+    function playIntroChime(){
+      try{
+        const ctx = ensureAudioContext();
+        if(!ctx) return;
 
-  function hideActionFlash(){
-    actionFlash.classList.remove("show", "correct", "pass");
-    wordEl.style.display = "flex";
-  }
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.value = 0.0001;
+          osc.connect(gain);
+          gain.connect(ctx.destination);
 
-  function transitionToNextWord(type, onCorrect){
-    if(!roundActive || transitionLock) return;
-
-    transitionLock = true;
-    showActionFlash(type);
-
-    actionFlashTimer = setTimeout(() => {
-      if(onCorrect){
-        if(teamTurn === "A") teamAScore++;
-        else teamBScore++;
-        updateScores();
-      }
-
-      wordEl.textContent = drawWord();
-      hideActionFlash();
-      transitionLock = false;
-    }, TRANSITION_DELAY);
-  }
-
-  function extractTiltValue(e){
-    const beta = (typeof e.beta === "number") ? e.beta : null;
-    const gamma = (typeof e.gamma === "number") ? e.gamma : null;
-
-    if(beta === null && gamma === null) return null;
-
-    const angle = (screen.orientation && typeof screen.orientation.angle === "number")
-      ? screen.orientation.angle
-      : (typeof window.orientation === "number" ? window.orientation : 0);
-
-    if(angle === 180 || angle === -180){
-      return beta !== null ? -beta : null;
+          const start = ctx.currentTime + (i * 0.12);
+          osc.start(start);
+          gain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.20);
+          osc.stop(start + 0.22);
+        });
+      }catch(e){}
     }
 
-    if(angle === 90){
-      return gamma !== null ? gamma : beta;
+    function playCategoryTap(){
+      try{
+        const ctx = ensureAudioContext();
+        if(!ctx) return;
+
+        const notePairs = [
+          { freq: 880, startOffset: 0.00, dur: 0.06 },
+          { freq: 1174.66, startOffset: 0.07, dur: 0.08 }
+        ];
+
+        notePairs.forEach(note => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.value = note.freq;
+          gain.gain.value = 0.0001;
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          const now = ctx.currentTime + note.startOffset;
+          osc.start(now);
+          gain.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + note.dur);
+          osc.stop(now + note.dur + 0.01);
+        });
+      }catch(e){}
     }
 
-    if(angle === -90 || angle === 270){
-      return gamma !== null ? -gamma : beta;
+    function clearCountdownTimers(){
+      countdownTimers.forEach(t => clearTimeout(t));
+      countdownTimers = [];
     }
 
-    return beta !== null ? beta : gamma;
-  }
+    function sanitizeTeamName(v){ return (v || "").trim().slice(0,18); }
 
-  function isForeheadPose(e){
-    const tiltValue = extractTiltValue(e);
-    if(tiltValue === null) return false;
+    function applyTeamNames(){
+      const a = sanitizeTeamName(teamANameInput.value) || "Team A";
+      const b = sanitizeTeamName(teamBNameInput.value) || "Team B";
+      teamANameLabel.textContent = a;
+      teamBNameLabel.textContent = b;
 
-    const absTilt = Math.abs(tiltValue);
-    return absTilt >= FOREHEAD_BETA_MIN && absTilt <= FOREHEAD_BETA_MAX;
-  }
-
-  function onDeviceOrientation(e){
-    const v = extractTiltValue(e);
-    if(v !== null){
-      latestTiltValue = v;
+      if(sanitizeTeamName(teamANameInput.value)) teamANameInput.classList.add("hidden");
+      if(sanitizeTeamName(teamBNameInput.value)) teamBNameInput.classList.add("hidden");
+      updateTurnUI();
     }
 
-    if(waitingForForeheadPose){
-      if(isForeheadPose(e)){
-        if(!foreheadStableSince){
-          foreheadStableSince = Date.now();
-        }
-
-        if(Date.now() - foreheadStableSince >= FOREHEAD_READY_MIN_MS){
-          waitingForForeheadPose = false;
-          foreheadStableSince = 0;
-          startCountdownSequence();
-        }
+    function editTeam(team){
+      if(team === "A"){
+        teamANameInput.classList.remove("hidden");
+        teamANameInput.value = (teamANameLabel.textContent || "").replace(/^Team A$/,"");
+        teamANameInput.focus();
+        teamANameInput.select();
       }else{
-        foreheadStableSince = 0;
-      }
-      return;
-    }
-
-    if(v === null) return;
-    if(!roundActive) return;
-    if(preRoundActive) return;
-    if(matchOver) return;
-    if(tiltBaseline === null) return;
-    if(transitionLock) return;
-
-    const now = Date.now();
-    if(now - lastTiltActionAt < TILT_COOLDOWN) return;
-
-    const delta = v - tiltBaseline;
-
-    if(!tiltArmed){
-      if(Math.abs(delta) <= TILT_RESET) tiltArmed = true;
-      return;
-    }
-
-    if(delta < -TILT_THRESHOLD){
-      tiltArmed = false;
-      lastTiltActionAt = now;
-      skipWord();
-    }else if(delta > TILT_THRESHOLD){
-      tiltArmed = false;
-      lastTiltActionAt = now;
-      correctWord();
-    }
-  }
-
-  async function enableTiltListening(){
-    if(tiltListening) return true;
-
-    if(typeof DeviceOrientationEvent !== "undefined" &&
-       typeof DeviceOrientationEvent.requestPermission === "function"){
-      try{
-        const res = await DeviceOrientationEvent.requestPermission();
-        if(res !== "granted") return false;
-      }catch(e){
-        return false;
+        teamBNameInput.classList.remove("hidden");
+        teamBNameInput.value = (teamBNameLabel.textContent || "").replace(/^Team B$/,"");
+        teamBNameInput.focus();
+        teamBNameInput.select();
       }
     }
 
-    window.addEventListener("deviceorientation", onDeviceOrientation, true);
-    tiltListening = true;
-    return true;
-  }
-
-  function calibrateTilt(){
-    if(latestTiltValue === null){
-      tiltBaseline = null;
-      return false;
+    function updateScores(){
+      scoreAEl.textContent = teamAScore;
+      scoreBEl.textContent = teamBScore;
     }
-    tiltBaseline = latestTiltValue;
-    tiltArmed = true;
-    lastTiltActionAt = 0;
-    return true;
-  }
 
-  function handleOrientationRefresh(){
-    setTimeout(() => {
-      if(roundActive || preRoundActive){
-        calibrateTilt();
+    function currentTeamName(){
+      return teamTurn === "A" ? teamANameLabel.textContent : teamBNameLabel.textContent;
+    }
+
+    function updateTurnUI(){
+      turnIndicator.textContent = `${currentTeamName()}’s Turn`;
+      teamABox.classList.toggle("active", teamTurn === "A");
+      teamBBox.classList.toggle("active", teamTurn === "B");
+    }
+
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
       }
-    }, 250);
-  }
-
-  function recordingSupported(){
-    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-  }
-
-  function updateRecordingUI(){
-    if(!recordingSupported()){
-      recordEnabled = false;
-      recordToggleBtn.textContent = "Recording: Not Supported";
-      recordToggleBtn.disabled = true;
-      recordToggleBtn.style.background = "#ffffff";
-      recordToggleBtn.style.color = "#082643";
-      return;
+      return a;
     }
 
-    recordToggleBtn.disabled = false;
-
-    if(recordEnabled){
-      recordToggleBtn.textContent = "Recording: On";
-      recordToggleBtn.style.background = "linear-gradient(180deg,#1f9d55 0%,#0b6b3a 100%)";
-      recordToggleBtn.style.color = "#fff";
-    }else{
-      recordToggleBtn.textContent = "Recording: Off";
-      recordToggleBtn.style.background = "#ffffff";
-      recordToggleBtn.style.color = "#082643";
-    }
-  }
-
-  function clearLastRecordingUrl(){
-    if(lastRecordingUrl){
-      URL.revokeObjectURL(lastRecordingUrl);
-      lastRecordingUrl = "";
-    }
-    lastRecordingBlob = null;
-    recordPreview.removeAttribute("src");
-    recordPreview.load();
-    recordPreviewWrap.style.display = "none";
-    downloadLink.style.display = "none";
-    downloadLink.classList.add("disabled");
-    downloadLink.href = "#";
-    shareRecordingBtn.style.display = "none";
-  }
-
-  function releaseRecordStream(){
-    if(recordStream){
-      recordStream.getTracks().forEach(track => track.stop());
-      recordStream = null;
-    }
-  }
-
-  function getPreferredMimeType(){
-    if(!window.MediaRecorder) return "";
-    const options = [
-      "video/webm;codecs=vp9,opus",
-      "video/webm;codecs=vp8,opus",
-      "video/webm"
-    ];
-    for(const type of options){
-      try{
-        if(MediaRecorder.isTypeSupported(type)) return type;
-      }catch(e){}
-    }
-    return "";
-  }
-
-  async function ensureRecordStream(){
-    if(!recordEnabled) return true;
-
-    if(!recordingSupported()){
-      recordEnabled = false;
-      updateRecordingUI();
-      statusEl.textContent = "Recording not supported on this device/browser.";
-      return false;
+    function restockPool(){
+      wordPool = shuffle([...(wordsData[selectedCategory] || [])]);
     }
 
-    if(recordStream && recordStream.active) return true;
+    function drawWord(){
+      if(!wordPool.length) restockPool();
+      return wordPool.pop() || "—";
+    }
 
-    const tryConstraints = async (facingMode) => {
-      return await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facingMode } },
-        audio: true
-      });
-    };
+    function setFocusMode(on){
+      document.body.classList.toggle("roundFocus", !!on);
+    }
 
-    try{
-      recordStream = await tryConstraints("user");
-      return true;
-    }catch(e1){
-      try{
-        recordStream = await tryConstraints("environment");
-        return true;
-      }catch(e2){
-        recordEnabled = false;
-        updateRecordingUI();
-        statusEl.textContent = "Recording permission denied or unavailable. (Check app permissions)";
-        releaseRecordStream();
-        return false;
+    function updateStartPrompt(){
+      const introShowing = introOverlay.classList.contains("show");
+      const shouldShow =
+        !!selectedCategory &&
+        !roundActive &&
+        !matchOver &&
+        !preRoundActive &&
+        !introShowing;
+
+      startPromptBtn.classList.toggle("show", shouldShow);
+      startPromptBtn.disabled = !shouldShow;
+    }
+
+    function showWordCard(text){
+      wordEl.textContent = text;
+      wordEl.style.display = "flex";
+      actionFlash.classList.remove("show", "correct", "pass");
+      startPromptBtn.classList.remove("show");
+    }
+
+    function hideWordCard(){
+      wordEl.style.display = "none";
+    }
+
+    function showActionFlash(type){
+      clearTimeout(actionFlashTimer);
+      actionFlash.classList.remove("correct", "pass", "show");
+
+      if(type === "correct"){
+        actionFlash.textContent = "CORRECT";
+        actionFlash.classList.add("correct");
+      }else{
+        actionFlash.textContent = "PASS";
+        actionFlash.classList.add("pass");
+      }
+
+      wordEl.style.display = "none";
+      actionFlash.classList.add("show");
+    }
+
+    function hideActionFlash(){
+      actionFlash.classList.remove("show", "correct", "pass");
+      if(roundActive){
+        wordEl.style.display = "flex";
+      }else{
+        hideWordCard();
       }
     }
-  }
 
-  function updateRecordingActions(){
-    if(!lastRecordingBlob || !lastRecordingUrl){
-      downloadLink.style.display = "none";
-      shareRecordingBtn.style.display = "none";
-      recordPreviewWrap.style.display = "none";
-      return;
-    }
+    function transitionToNextWord(type, onCorrect){
+      if(!roundActive || transitionLock) return;
 
-    const ext = lastRecordingMimeType.includes("mp4") ? "mp4" : "webm";
+      transitionLock = true;
+      showActionFlash(type);
 
-    downloadLink.href = lastRecordingUrl;
-    downloadLink.download = `urban-charades-round-${Date.now()}.${ext}`;
-    downloadLink.style.display = "inline-flex";
-    downloadLink.classList.remove("disabled");
-
-    recordPreview.src = lastRecordingUrl;
-    recordPreviewWrap.style.display = "flex";
-
-    if(navigator.canShare && typeof File !== "undefined"){
-      try{
-        const file = new File([lastRecordingBlob], `urban-charades-round.${ext}`, { type: lastRecordingMimeType });
-        if(navigator.canShare({ files: [file] })){
-          shareRecordingBtn.style.display = "inline-flex";
-          return;
+      actionFlashTimer = setTimeout(() => {
+        if(onCorrect){
+          if(teamTurn === "A") teamAScore++;
+          else teamBScore++;
+          updateScores();
         }
-      }catch(e){}
+
+        wordEl.textContent = drawWord();
+        wordEl.style.display = "flex";
+        hideActionFlash();
+        transitionLock = false;
+      }, TRANSITION_DELAY);
     }
-    shareRecordingBtn.style.display = "none";
-  }
 
-  function startRecordingForRound(){
-    if(!recordEnabled || !recordStream || !window.MediaRecorder) return;
+    function extractTiltValue(e){
+      const beta = (typeof e.beta === "number") ? e.beta : null;
+      const gamma = (typeof e.gamma === "number") ? e.gamma : null;
 
-    mediaChunks = [];
+      if(beta === null && gamma === null) return null;
 
-    try{
-      const mimeType = getPreferredMimeType();
-      mediaRecorder = mimeType
-        ? new MediaRecorder(recordStream, { mimeType })
-        : new MediaRecorder(recordStream);
+      const angle = (screen.orientation && typeof screen.orientation.angle === "number")
+        ? screen.orientation.angle
+        : (typeof window.orientation === "number" ? window.orientation : 0);
 
-      mediaRecorder.ondataavailable = (event) => {
-        if(event.data && event.data.size > 0){
-          mediaChunks.push(event.data);
-        }
-      };
+      if(angle === 180 || angle === -180){
+        return beta !== null ? -beta : null;
+      }
 
-      mediaRecorder.onstop = () => {
-        try{
-          if(!mediaChunks.length){
-            releaseRecordStream();
-            return;
+      if(angle === 90){
+        return gamma !== null ? gamma : beta;
+      }
+
+      if(angle === -90 || angle === 270){
+        return gamma !== null ? -gamma : beta;
+      }
+
+      return beta !== null ? beta : gamma;
+    }
+
+    function isForeheadPose(e){
+      const tiltValue = extractTiltValue(e);
+      if(tiltValue === null) return false;
+
+      const absTilt = Math.abs(tiltValue);
+      return absTilt >= FOREHEAD_BETA_MIN && absTilt <= FOREHEAD_BETA_MAX;
+    }
+
+    function onDeviceOrientation(e){
+      const v = extractTiltValue(e);
+      if(v !== null){
+        latestTiltValue = v;
+      }
+
+      if(waitingForForeheadPose){
+        if(isForeheadPose(e)){
+          if(!foreheadStableSince){
+            foreheadStableSince = Date.now();
           }
 
-          clearLastRecordingUrl();
-
-          const blobType = mediaChunks[0].type || "video/webm";
-          const blob = new Blob(mediaChunks, { type: blobType });
-          lastRecordingBlob = blob;
-          lastRecordingMimeType = blobType;
-          lastRecordingUrl = URL.createObjectURL(blob);
-
-          updateRecordingActions();
-
-          statusEl.textContent = "✅ Recording ready. Tap Save Last Recording, or use Share Last Recording if save does not work.";
-        } finally {
-          releaseRecordStream();
+          if(Date.now() - foreheadStableSince >= FOREHEAD_READY_MIN_MS){
+            waitingForForeheadPose = false;
+            foreheadStableSince = 0;
+            startCountdownSequence();
+          }
+        }else{
+          foreheadStableSince = 0;
         }
-      };
-
-      mediaRecorder.start();
-    }catch(e){
-      statusEl.textContent = "Recording could not start on this device.";
-    }
-  }
-
-  function stopRecordingIfActive(){
-    try{
-      if(mediaRecorder && mediaRecorder.state !== "inactive"){
-        mediaRecorder.stop();
-      }else{
-        releaseRecordStream();
-      }
-    }catch(e){
-      releaseRecordStream();
-    }
-  }
-
-  async function shareLastRecording(){
-    if(!lastRecordingBlob) return;
-
-    if(!(navigator.canShare && navigator.share && typeof File !== "undefined")){
-      statusEl.textContent = "Sharing is not supported on this device. Try Save Last Recording.";
-      return;
-    }
-
-    try{
-      const ext = lastRecordingMimeType.includes("mp4") ? "mp4" : "webm";
-      const file = new File([lastRecordingBlob], `urban-charades-round.${ext}`, { type: lastRecordingMimeType });
-
-      if(!navigator.canShare({ files: [file] })){
-        statusEl.textContent = "This device cannot share the recording file directly.";
         return;
       }
 
-      await navigator.share({
-        files: [file],
-        title: "Urban Charades Recording",
-        text: "Last round recording"
-      });
-    }catch(e){
-      if(e && e.name !== "AbortError"){
-        statusEl.textContent = "Sharing failed. Try Save Last Recording.";
-      }
-    }
-  }
+      if(v === null) return;
+      if(!roundActive) return;
+      if(preRoundActive) return;
+      if(matchOver) return;
+      if(tiltBaseline === null) return;
+      if(transitionLock) return;
 
-  function buildCategoryGrid(){
-    categoryGrid.innerHTML = "";
-    CATEGORY_DEFS.forEach((c)=>{
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "categoryCard";
-      btn.setAttribute("data-cat", c.key);
+      const now = Date.now();
+      if(now - lastTiltActionAt < TILT_COOLDOWN) return;
 
-      const img = document.createElement("img");
-      img.className = "categoryImg";
-      img.alt = c.key;
-      img.loading = "lazy";
-      img.src = c.img;
-      img.onerror = () => btn.classList.add("noImg");
+      const delta = v - tiltBaseline;
 
-      const fallback = document.createElement("div");
-      fallback.className = "categoryFallbackLabel";
-      fallback.textContent = c.key;
-
-      btn.appendChild(img);
-      btn.appendChild(fallback);
-
-      btn.addEventListener("click", ()=>{
-        if(matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
-        selectedCategory = c.key;
-        restockPool();
-        statusEl.textContent = "🗂️ Category selected — tap Start Round.";
-        wordEl.textContent = "Tap Start Round to begin!";
-        hideActionFlash();
-        markSelectedCategory();
-        updateButtons();
-      });
-
-      categoryGrid.appendChild(btn);
-    });
-
-    markSelectedCategory();
-  }
-
-  function markSelectedCategory(){
-    [...categoryGrid.querySelectorAll(".categoryCard")].forEach(el=>{
-      el.classList.toggle("selected", el.getAttribute("data-cat") === selectedCategory);
-    });
-  }
-
-  async function beginCountdownPrompt(){
-    if(!selectedCategory || roundActive || matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
-
-    preRoundActive = true;
-    updateButtons();
-
-    ensureAudioContext();
-    await enableTiltListening();
-
-    if(recordEnabled){
-      await ensureRecordStream();
-    }
-
-    overlaySub.textContent = `${currentTeamName()}, place the phone on your forehead to begin.`;
-    countNum.textContent = "READY";
-    foreheadOverlay.classList.add("show");
-
-    clearCountdownTimers();
-    waitingForForeheadPose = true;
-    foreheadStableSince = 0;
-  }
-
-  function startCountdownSequence(){
-    if(!preRoundActive) return;
-
-    overlaySub.textContent = `${currentTeamName()}, hold steady...`;
-    countNum.textContent = "3";
-
-    clearCountdownTimers();
-
-    const steps = [
-      { t: 0, label: "3", freq: 740 },
-      { t: 1000, label: "2", freq: 740 },
-      { t: 2000, label: "1", freq: 740 },
-      { t: 3000, label: "GO!", freq: 1040 }
-    ];
-
-    steps.forEach(step => {
-      countdownTimers.push(setTimeout(() => {
-        countNum.textContent = step.label;
-        beep(step.freq, step.label === "GO!" ? 260 : 170);
-      }, step.t));
-    });
-
-    countdownTimers.push(setTimeout(() => {
-      foreheadOverlay.classList.remove("show");
-      preRoundActive = false;
-
-      const ok = calibrateTilt();
-      if(!ok){
-        statusEl.textContent = "Tilt not available — tap LEFT for CORRECT or RIGHT for PASS.";
+      if(!tiltArmed){
+        if(Math.abs(delta) <= TILT_RESET) tiltArmed = true;
+        return;
       }
 
-      startActualRound();
-    }, 3600));
-  }
+      // UP = pass, DOWN = correct
+      if(delta > TILT_THRESHOLD){
+        tiltArmed = false;
+        lastTiltActionAt = now;
+        skipWord();
+      }else if(delta < -TILT_THRESHOLD){
+        tiltArmed = false;
+        lastTiltActionAt = now;
+        correctWord();
+      }
+    }
 
-  function startActualRound(){
-    if(!selectedCategory || roundActive || matchOver) return;
+    async function enableTiltListening(){
+      if(tiltListening) return true;
 
-    roundActive = true;
-    timeLeft = 60;
-    timerEl.textContent = `Time: ${timeLeft}`;
-    statusEl.textContent = "Round started! (Tilt up = Pass, tilt down = Correct)";
-    hideActionFlash();
-    wordEl.textContent = drawWord();
-    setFocusMode(true);
+      if(typeof DeviceOrientationEvent !== "undefined" &&
+         typeof DeviceOrientationEvent.requestPermission === "function"){
+        try{
+          const res = await DeviceOrientationEvent.requestPermission();
+          if(res !== "granted") return false;
+        }catch(e){
+          return false;
+        }
+      }
 
-    safePlay(soundStart);
-    startRecordingForRound();
+      window.addEventListener("deviceorientation", onDeviceOrientation, true);
+      tiltListening = true;
+      return true;
+    }
 
-    clearInterval(timerInterval);
-    timerInterval = setInterval(()=>{
-      timeLeft--;
-      timerEl.textContent = `Time: ${timeLeft}`;
+    function calibrateTilt(){
+      if(latestTiltValue === null){
+        tiltBaseline = null;
+        return false;
+      }
+      tiltBaseline = latestTiltValue;
+      tiltArmed = true;
+      lastTiltActionAt = 0;
+      return true;
+    }
 
-      if(timeLeft <= 10){
-        timerEl.style.color = "#7a0000";
-        timerEl.style.background = "rgba(255,120,120,0.36)";
+    function handleOrientationRefresh(){
+      setTimeout(() => {
+        if(roundActive || preRoundActive){
+          calibrateTilt();
+        }
+      }, 250);
+    }
+
+    function recordingSupported(){
+      return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+    }
+
+    function updateRecordingUI(){
+      if(!recordingSupported()){
+        recordEnabled = false;
+        recordToggleBtn.textContent = "Recording: Not Supported";
+        recordToggleBtn.disabled = true;
+        recordToggleBtn.style.background = "#ffffff";
+        recordToggleBtn.style.color = "#082643";
+        return;
+      }
+
+      recordToggleBtn.disabled = false;
+
+      if(recordEnabled){
+        recordToggleBtn.textContent = "Recording: On";
+        recordToggleBtn.style.background = "linear-gradient(180deg,#1f9d55 0%,#0b6b3a 100%)";
+        recordToggleBtn.style.color = "#fff";
       }else{
-        timerEl.style.color = "var(--text)";
-        timerEl.style.background = "rgba(10,92,170,0.16)";
+        recordToggleBtn.textContent = "Recording: Off";
+        recordToggleBtn.style.background = "#ffffff";
+        recordToggleBtn.style.color = "#082643";
+      }
+    }
+
+    function clearLastRecordingUrl(){
+      if(lastRecordingUrl){
+        URL.revokeObjectURL(lastRecordingUrl);
+        lastRecordingUrl = "";
+      }
+      lastRecordingBlob = null;
+      recordPreview.removeAttribute("src");
+      recordPreview.load();
+      recordPreviewWrap.style.display = "none";
+      downloadLink.style.display = "none";
+      downloadLink.classList.add("disabled");
+      downloadLink.href = "#";
+      shareRecordingBtn.style.display = "none";
+    }
+
+    function releaseRecordStream(){
+      if(recordStream){
+        recordStream.getTracks().forEach(track => track.stop());
+        recordStream = null;
+      }
+    }
+
+    function getPreferredMimeType(){
+      if(!window.MediaRecorder) return "";
+      const options = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm"
+      ];
+      for(const type of options){
+        try{
+          if(MediaRecorder.isTypeSupported(type)) return type;
+        }catch(e){}
+      }
+      return "";
+    }
+
+    async function ensureRecordStream(){
+      if(!recordEnabled) return true;
+
+      if(!recordingSupported()){
+        recordEnabled = false;
+        updateRecordingUI();
+        statusEl.textContent = "Recording not supported on this device/browser.";
+        return false;
       }
 
-      if(timeLeft <= 0) endRound();
-    }, 1000);
+      if(recordStream && recordStream.active) return true;
 
-    updateButtons();
-  }
+      const tryConstraints = async (facingMode) => {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+          audio: true
+        });
+      };
 
-  function endRound(){
-    clearInterval(timerInterval);
-    timerInterval = null;
-    clearCountdownTimers();
-    roundActive = false;
-    waitingForForeheadPose = false;
-    foreheadStableSince = 0;
-
-    hideActionFlash();
-    transitionLock = false;
-    clearTimeout(actionFlashTimer);
-    wordEl.style.display = "flex";
-
-    setFocusMode(false);
-    safePlay(soundTimeUp);
-
-    stopRecordingIfActive();
-
-    timerEl.style.color = "var(--text)";
-    timerEl.style.background = "rgba(10,92,170,0.16)";
-
-    if(teamTurn === "A"){
-      teamTurn = "B";
-      updateTurnUI();
-      statusEl.textContent = `⏰ Time’s up! Next: ${currentTeamName()} — tap Start Round.`;
-      wordEl.textContent = "Tap Start Round to begin!";
-    }else{
-      showWinScreen();
-      matchOver = true;
+      try{
+        recordStream = await tryConstraints("user");
+        return true;
+      }catch(e1){
+        try{
+          recordStream = await tryConstraints("environment");
+          return true;
+        }catch(e2){
+          recordEnabled = false;
+          updateRecordingUI();
+          statusEl.textContent = "Recording permission denied or unavailable. (Check app permissions)";
+          releaseRecordStream();
+          return false;
+        }
+      }
     }
 
-    updateButtons();
-  }
+    function updateRecordingActions(){
+      if(!lastRecordingBlob || !lastRecordingUrl){
+        downloadLink.style.display = "none";
+        shareRecordingBtn.style.display = "none";
+        recordPreviewWrap.style.display = "none";
+        return;
+      }
 
-  function skipWord(){
-    if(!roundActive || transitionLock) return;
-    safePlay(soundSkip);
-    transitionToNextWord("pass", false);
-  }
+      const ext = lastRecordingMimeType.includes("mp4") ? "mp4" : "webm";
 
-  function correctWord(){
-    if(!roundActive || transitionLock) return;
-    safePlay(soundCorrect);
-    transitionToNextWord("correct", true);
-  }
+      downloadLink.href = lastRecordingUrl;
+      downloadLink.download = `urban-charades-round-${Date.now()}.${ext}`;
+      downloadLink.style.display = "inline-flex";
+      downloadLink.classList.remove("disabled");
 
-  wordEl.addEventListener("click", (e)=>{
-    if(!roundActive || transitionLock) return;
+      recordPreview.src = lastRecordingUrl;
+      recordPreviewWrap.style.display = "flex";
 
-    const now = Date.now();
-    if(now - lastActionAt < 250) return;
-    lastActionAt = now;
-
-    const rect = wordEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-
-    if(x < rect.width / 2) correctWord();
-    else skipWord();
-  });
-
-  document.addEventListener("keydown", (e)=>{
-    if(!roundActive || transitionLock) return;
-
-    if(e.key === "ArrowLeft" || e.key === "ArrowDown") correctWord();
-    if(e.key === "ArrowRight" || e.key === "ArrowUp") skipWord();
-  });
-
-  function showWinScreen(){
-    setFocusMode(false);
-
-    finalScoreA.textContent = `${teamANameLabel.textContent}: ${teamAScore}`;
-    finalScoreB.textContent = `${teamBNameLabel.textContent}: ${teamBScore}`;
-
-    if(teamAScore > teamBScore) winTeamEl.textContent = `${teamANameLabel.textContent} Wins! 🎉`;
-    else if(teamBScore > teamAScore) winTeamEl.textContent = `${teamBNameLabel.textContent} Wins! 🎉`;
-    else winTeamEl.textContent = "It’s a tie! 🤝";
-
-    winOverlay.classList.add("show");
-  }
-
-  function resetScoresOnly(){
-    teamAScore = 0;
-    teamBScore = 0;
-    updateScores();
-    teamTurn = "A";
-    updateTurnUI();
-    matchOver = false;
-
-    statusEl.textContent = "Tap Start Round to play again!";
-    wordEl.textContent = "Tap Start Round to begin!";
-    hideActionFlash();
-    updateButtons();
-  }
-
-  function newGame(){
-    clearInterval(timerInterval);
-    timerInterval = null;
-    clearCountdownTimers();
-    stopRecordingIfActive();
-
-    matchOver = false;
-    roundActive = false;
-    preRoundActive = false;
-    waitingForForeheadPose = false;
-    foreheadStableSince = 0;
-    transitionLock = false;
-    clearTimeout(actionFlashTimer);
-
-    foreheadOverlay.classList.remove("show");
-    setFocusMode(false);
-
-    selectedCategory = "";
-    wordPool = [];
-    markSelectedCategory();
-
-    teamAScore = 0;
-    teamBScore = 0;
-    updateScores();
-
-    teamTurn = "A";
-    updateTurnUI();
-
-    hideActionFlash();
-    statusEl.textContent = "Choose a category to get started!";
-    wordEl.textContent = "Choose a category to get started!";
-    timerEl.textContent = "Time: 60";
-    timerEl.style.color = "var(--text)";
-    timerEl.style.background = "rgba(10,92,170,0.16)";
-
-    clearLastRecordingUrl();
-
-    updateButtons();
-  }
-
-  async function enterGame(){
-    ensureAudioContext();
-    playIntroChime();
-    await enableTiltListening();
-
-    if(recordEnabled){
-      const ok = await ensureRecordStream();
-      if(ok) releaseRecordStream();
+      if(navigator.canShare && typeof File !== "undefined"){
+        try{
+          const file = new File([lastRecordingBlob], `urban-charades-round.${ext}`, { type: lastRecordingMimeType });
+          if(navigator.canShare({ files: [file] })){
+            shareRecordingBtn.style.display = "inline-flex";
+            return;
+          }
+        }catch(e){}
+      }
+      shareRecordingBtn.style.display = "none";
     }
 
-    introOverlay.classList.remove("show");
-    updateRecordingUI();
-    updateButtons();
-  }
+    function startRecordingForRound(){
+      if(!recordEnabled || !recordStream || !window.MediaRecorder) return;
 
-  enterAppBtn.addEventListener("click", enterGame);
-  introOverlay.addEventListener("click", (e)=>{
-    if(e.target === introOverlay) enterGame();
-  });
+      mediaChunks = [];
 
-  startBtn.addEventListener("click", beginCountdownPrompt);
+      try{
+        const mimeType = getPreferredMimeType();
+        mediaRecorder = mimeType
+          ? new MediaRecorder(recordStream, { mimeType })
+          : new MediaRecorder(recordStream);
 
-  recordToggleBtn.addEventListener("click", async ()=>{
-    if(!recordingSupported()){
-      updateRecordingUI();
-      return;
+        mediaRecorder.ondataavailable = (event) => {
+          if(event.data && event.data.size > 0){
+            mediaChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          try{
+            if(!mediaChunks.length){
+              releaseRecordStream();
+              return;
+            }
+
+            clearLastRecordingUrl();
+
+            const blobType = mediaChunks[0].type || "video/webm";
+            const blob = new Blob(mediaChunks, { type: blobType });
+            lastRecordingBlob = blob;
+            lastRecordingMimeType = blobType;
+            lastRecordingUrl = URL.createObjectURL(blob);
+
+            updateRecordingActions();
+
+            statusEl.textContent = "✅ Recording ready. Tap Save Last Recording, or use Share Last Recording if save does not work.";
+          } finally {
+            releaseRecordStream();
+          }
+        };
+
+        mediaRecorder.start();
+      }catch(e){
+        statusEl.textContent = "Recording could not start on this device.";
+      }
     }
 
-    recordEnabled = !recordEnabled;
+    function stopRecordingIfActive(){
+      try{
+        if(mediaRecorder && mediaRecorder.state !== "inactive"){
+          mediaRecorder.stop();
+        }else{
+          releaseRecordStream();
+        }
+      }catch(e){
+        releaseRecordStream();
+      }
+    }
 
-    if(!recordEnabled){
+    async function shareLastRecording(){
+      if(!lastRecordingBlob) return;
+
+      if(!(navigator.canShare && navigator.share && typeof File !== "undefined")){
+        statusEl.textContent = "Sharing is not supported on this device. Try Save Last Recording.";
+        return;
+      }
+
+      try{
+        const ext = lastRecordingMimeType.includes("mp4") ? "mp4" : "webm";
+        const file = new File([lastRecordingBlob], `urban-charades-round.${ext}`, { type: lastRecordingMimeType });
+
+        if(!navigator.canShare({ files: [file] })){
+          statusEl.textContent = "This device cannot share the recording file directly.";
+          return;
+        }
+
+        await navigator.share({
+          files: [file],
+          title: "Urban Charades Recording",
+          text: "Last round recording"
+        });
+      }catch(e){
+        if(e && e.name !== "AbortError"){
+          statusEl.textContent = "Sharing failed. Try Save Last Recording.";
+        }
+      }
+    }
+
+    function buildCategoryGrid(){
+      categoryGrid.innerHTML = "";
+      CATEGORY_DEFS.forEach((c)=>{
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "categoryCard";
+        btn.setAttribute("data-cat", c.key);
+
+        const img = document.createElement("img");
+        img.className = "categoryImg";
+        img.alt = c.key;
+        img.loading = "lazy";
+        img.src = c.img;
+        img.onerror = () => btn.classList.add("noImg");
+
+        const fallback = document.createElement("div");
+        fallback.className = "categoryFallbackLabel";
+        fallback.textContent = c.key;
+
+        btn.appendChild(img);
+        btn.appendChild(fallback);
+
+        btn.addEventListener("click", ()=>{
+          if(matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
+
+          playCategoryTap();
+
+          selectedCategory = c.key;
+          restockPool();
+          statusEl.textContent = "🗂️ Category selected — tap the red button to start.";
+          hideActionFlash();
+          hideWordCard();
+          markSelectedCategory();
+          updateStartPrompt();
+        });
+
+        categoryGrid.appendChild(btn);
+      });
+
+      markSelectedCategory();
+    }
+
+    function markSelectedCategory(){
+      [...categoryGrid.querySelectorAll(".categoryCard")].forEach(el=>{
+        el.classList.toggle("selected", el.getAttribute("data-cat") === selectedCategory);
+      });
+    }
+
+    async function beginCountdownPrompt(){
+      if(!selectedCategory || roundActive || matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
+
+      preRoundActive = true;
+      updateStartPrompt();
+      hideWordCard();
+      actionFlash.classList.remove("show", "correct", "pass");
+
+      ensureAudioContext();
+      await enableTiltListening();
+
+      if(recordEnabled){
+        await ensureRecordStream();
+      }
+
+      overlaySub.textContent = `${currentTeamName()}, place the phone on your forehead to begin.`;
+      countNum.textContent = "READY";
+      foreheadOverlay.classList.add("show");
+
+      clearCountdownTimers();
+      waitingForForeheadPose = true;
+      foreheadStableSince = 0;
+    }
+
+    function startCountdownSequence(){
+      if(!preRoundActive) return;
+
+      overlaySub.textContent = `${currentTeamName()}, hold steady...`;
+      countNum.textContent = "3";
+
+      clearCountdownTimers();
+
+      const steps = [
+        { t: 0, label: "3", freq: 740 },
+        { t: 1000, label: "2", freq: 740 },
+        { t: 2000, label: "1", freq: 740 },
+        { t: 3000, label: "GO!", freq: 1040 }
+      ];
+
+      steps.forEach(step => {
+        countdownTimers.push(setTimeout(() => {
+          countNum.textContent = step.label;
+          beep(step.freq, step.label === "GO!" ? 260 : 170);
+        }, step.t));
+      });
+
+      countdownTimers.push(setTimeout(() => {
+        foreheadOverlay.classList.remove("show");
+        preRoundActive = false;
+
+        const ok = calibrateTilt();
+        if(!ok){
+          statusEl.textContent = "Tilt not available — tap LEFT for CORRECT or RIGHT for PASS.";
+        }
+
+        startActualRound();
+      }, 3600));
+    }
+
+    function startActualRound(){
+      if(!selectedCategory || roundActive || matchOver) return;
+
+      roundActive = true;
+      timeLeft = 60;
+      timerEl.textContent = `Time: ${timeLeft}`;
+      statusEl.textContent = "Round started! (Tilt up = Pass, tilt down = Correct)";
+      hideActionFlash();
+      showWordCard(drawWord());
+      setFocusMode(true);
+
+      safePlay(soundStart);
+      startRecordingForRound();
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        timeLeft--;
+        timerEl.textContent = `Time: ${timeLeft}`;
+
+        if(timeLeft <= 10){
+          timerEl.style.color = "#7a0000";
+          timerEl.style.background = "rgba(255,120,120,0.36)";
+        }else{
+          timerEl.style.color = "var(--text)";
+          timerEl.style.background = "rgba(255,255,255,0.16)";
+        }
+
+        if(timeLeft <= 0) endRound();
+      }, 1000);
+
+      updateStartPrompt();
+    }
+
+    function endRound(){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      clearCountdownTimers();
+      roundActive = false;
+      waitingForForeheadPose = false;
+      foreheadStableSince = 0;
+
+      hideActionFlash();
+      transitionLock = false;
+      clearTimeout(actionFlashTimer);
+      wordEl.style.display = "none";
+
+      setFocusMode(false);
+      safePlay(soundTimeUp);
+
       stopRecordingIfActive();
-      updateRecordingUI();
-      statusEl.textContent = "🎥 Recording turned off.";
-      return;
+
+      timerEl.style.color = "var(--text)";
+      timerEl.style.background = "rgba(255,255,255,0.16)";
+
+      if(teamTurn === "A"){
+        teamTurn = "B";
+        updateTurnUI();
+        statusEl.textContent = `⏰ Time’s up! Next: ${currentTeamName()} — tap the red button to start.`;
+        hideWordCard();
+      }else{
+        showWinScreen();
+        matchOver = true;
+      }
+
+      updateStartPrompt();
     }
 
-    const ok = await ensureRecordStream();
-    if(ok){
-      releaseRecordStream();
-      updateRecordingUI();
-      statusEl.textContent = "🎥 Recording is ON — it will start with the next round.";
-    }else{
-      updateRecordingUI();
+    function skipWord(){
+      if(!roundActive || transitionLock) return;
+      safePlay(soundSkip);
+      transitionToNextWord("pass", false);
     }
-  });
 
-  downloadLink.addEventListener("click", ()=>{
-    if(!lastRecordingUrl) return;
-    setTimeout(() => {
-      statusEl.textContent = "If the recording did not save on Android, use Share Last Recording below.";
-    }, 400);
-  });
-
-  shareRecordingBtn.addEventListener("click", shareLastRecording);
-
-  playAgainBtn.addEventListener("click", ()=>{
-    winOverlay.classList.remove("show");
-    resetScoresOnly();
-  });
-
-  newGameBtn.addEventListener("click", ()=>{
-    winOverlay.classList.remove("show");
-    newGame();
-  });
-
-  teamANameInput.addEventListener("blur", applyTeamNames);
-  teamBNameInput.addEventListener("blur", applyTeamNames);
-
-  teamANameInput.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"){
-      e.preventDefault();
-      applyTeamNames();
-      teamANameInput.blur();
+    function correctWord(){
+      if(!roundActive || transitionLock) return;
+      safePlay(soundCorrect);
+      transitionToNextWord("correct", true);
     }
-  });
 
-  teamBNameInput.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"){
-      e.preventDefault();
-      applyTeamNames();
-      teamBNameInput.blur();
-    }
-  });
+    wordEl.addEventListener("click", (e)=>{
+      if(!roundActive || transitionLock) return;
 
-  teamANameLabel.addEventListener("click", ()=> editTeam("A"));
-  teamBNameLabel.addEventListener("click", ()=> editTeam("B"));
+      const now = Date.now();
+      if(now - lastActionAt < 250) return;
+      lastActionAt = now;
 
-  window.addEventListener("orientationchange", handleOrientationRefresh);
-  window.addEventListener("resize", handleOrientationRefresh);
+      const rect = wordEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
 
-  if (screen.orientation && screen.orientation.addEventListener) {
-    screen.orientation.addEventListener("change", handleOrientationRefresh);
-  }
-
-  applyTeamNames();
-  updateScores();
-  updateTurnUI();
-  buildCategoryGrid();
-  updateRecordingUI();
-  updateButtons();
-  hideActionFlash();
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      if(x < rect.width / 2) correctWord();
+      else skipWord();
     });
-  }
-</script>
+
+    document.addEventListener("keydown", (e)=>{
+      if(!roundActive || transitionLock) return;
+
+      if(e.key === "ArrowLeft" || e.key === "ArrowDown") correctWord();
+      if(e.key === "ArrowRight" || e.key === "ArrowUp") skipWord();
+    });
+
+    function showWinScreen(){
+      setFocusMode(false);
+
+      finalScoreA.textContent = `${teamANameLabel.textContent}: ${teamAScore}`;
+      finalScoreB.textContent = `${teamBNameLabel.textContent}: ${teamBScore}`;
+
+      if(teamAScore > teamBScore) winTeamEl.textContent = `${teamANameLabel.textContent} Wins! 🎉`;
+      else if(teamBScore > teamAScore) winTeamEl.textContent = `${teamBNameLabel.textContent} Wins! 🎉`;
+      else winTeamEl.textContent = "It’s a tie! 🤝";
+
+      winOverlay.classList.add("show");
+    }
+
+    function resetScoresOnly(){
+      teamAScore = 0;
+      teamBScore = 0;
+      updateScores();
+      teamTurn = "A";
+      updateTurnUI();
+      matchOver = false;
+
+      statusEl.textContent = "Tap the red button to play again!";
+      hideWordCard();
+      hideActionFlash();
+      updateStartPrompt();
+    }
+
+    function newGame(){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      clearCountdownTimers();
+      stopRecordingIfActive();
+
+      matchOver = false;
+      roundActive = false;
+      preRoundActive = false;
+      waitingForForeheadPose = false;
+      foreheadStableSince = 0;
+      transitionLock = false;
+      clearTimeout(actionFlashTimer);
+
+      foreheadOverlay.classList.remove("show");
+      setFocusMode(false);
+
+      selectedCategory = "";
+      wordPool = [];
+      markSelectedCategory();
+
+      teamAScore = 0;
+      teamBScore = 0;
+      updateScores();
+
+      teamTurn = "A";
+      updateTurnUI();
+
+      hideActionFlash();
+      hideWordCard();
+      statusEl.textContent = "Choose a category to get started!";
+      timerEl.textContent = "Time: 60";
+      timerEl.style.color = "var(--text)";
+      timerEl.style.background = "rgba(255,255,255,0.16)";
+
+      clearLastRecordingUrl();
+
+      updateStartPrompt();
+    }
+
+    async function enterGame(){
+      ensureAudioContext();
+      playIntroChime();
+      await enableTiltListening();
+
+      if(recordEnabled){
+        const ok = await ensureRecordStream();
+        if(ok) releaseRecordStream();
+      }
+
+      introOverlay.classList.remove("show");
+      updateRecordingUI();
+      updateStartPrompt();
+      statusEl.textContent = "Choose a category to get started!";
+      hideWordCard();
+    }
+
+    enterAppBtn.addEventListener("click", enterGame);
+    introOverlay.addEventListener("click", (e)=>{
+      if(e.target === introOverlay) enterGame();
+    });
+
+    startPromptBtn.addEventListener("click", beginCountdownPrompt);
+
+    recordToggleBtn.addEventListener("click", async ()=>{
+      if(!recordingSupported()){
+        updateRecordingUI();
+        return;
+      }
+
+      recordEnabled = !recordEnabled;
+
+      if(!recordEnabled){
+        stopRecordingIfActive();
+        updateRecordingUI();
+        statusEl.textContent = "🎥 Recording turned off.";
+        return;
+      }
+
+      const ok = await ensureRecordStream();
+      if(ok){
+        releaseRecordStream();
+        updateRecordingUI();
+        statusEl.textContent = "🎥 Recording is ON — it will start with the next round.";
+      }else{
+        updateRecordingUI();
+      }
+    });
+
+    downloadLink.addEventListener("click", ()=>{
+      if(!lastRecordingUrl) return;
+      setTimeout(() => {
+        statusEl.textContent = "If the recording did not save on Android, use Share Last Recording below.";
+      }, 400);
+    });
+
+    shareRecordingBtn.addEventListener("click", shareLastRecording);
+
+    playAgainBtn.addEventListener("click", ()=>{
+      winOverlay.classList.remove("show");
+      resetScoresOnly();
+    });
+
+    newGameBtn.addEventListener("click", ()=>{
+      winOverlay.classList.remove("show");
+      newGame();
+    });
+
+    teamANameInput.addEventListener("blur", applyTeamNames);
+    teamBNameInput.addEventListener("blur", applyTeamNames);
+
+    teamANameInput.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        applyTeamNames();
+        teamANameInput.blur();
+      }
+    });
+
+    teamBNameInput.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        applyTeamNames();
+        teamBNameInput.blur();
+      }
+    });
+
+    teamANameLabel.addEventListener("click", ()=> editTeam("A"));
+    teamBNameLabel.addEventListener("click", ()=> editTeam("B"));
+
+    window.addEventListener("orientationchange", handleOrientationRefresh);
+    window.addEventListener("resize", handleOrientationRefresh);
+
+    if (screen.orientation && screen.orientation.addEventListener) {
+      screen.orientation.addEventListener("change", handleOrientationRefresh);
+    }
+
+    applyTeamNames();
+    updateScores();
+    updateTurnUI();
+    buildCategoryGrid();
+    updateRecordingUI();
+    updateStartPrompt();
+    hideActionFlash();
+    hideWordCard();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      });
+    }
+  </script>
 </body>
 </html>
