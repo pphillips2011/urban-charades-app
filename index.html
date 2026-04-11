@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <meta name="theme-color" content="#10233d" />
+  <meta name="theme-color" content="#3b93ff" />
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,37 +16,38 @@
 
   <style>
     :root{
-      --bg0:#1d436f;
-      --bg1:#102a4a;
-      --bg2:#091a30;
-      --bg3:#050d18;
+      --bgTop:#56b2ff;
+      --bgMid:#2d7df0;
+      --bgBottom:#114fae;
+      --bgDeep:#0a3275;
 
-      --primary:#d83b52;
-      --primaryDark:#8e1729;
-      --primaryText:#fff9fb;
+      --white:#ffffff;
+      --whiteSoft:rgba(255,255,255,0.92);
+      --glass:rgba(255,255,255,0.18);
+      --glassStrong:rgba(255,255,255,0.28);
+      --glassBorder:rgba(255,255,255,0.34);
 
-      --accent:#c9a86a;
-      --accentDark:#8a6a35;
-      --accentText:#16110b;
+      --text:#ffffff;
+      --textSoft:#edf6ff;
+      --darkText:#113154;
 
-      --success:#2f7a55;
-      --successDark:#19462f;
-      --successText:#f4fff8;
+      --primary:#e5485f;
+      --primaryDark:#b51f36;
 
-      --surface:rgba(255,255,255,0.10);
-      --surfaceStrong:rgba(255,255,255,0.14);
-      --surfaceSoft:rgba(255,255,255,0.07);
-      --surfaceBorder:rgba(255,255,255,0.14);
+      --gold:#ffd36d;
+      --goldDark:#d59d1a;
 
-      --panelDark:rgba(6,18,34,0.78);
-      --panelDarkBorder:rgba(207,227,255,0.12);
+      --success:#2fb86b;
+      --successDark:#1e7f48;
 
-      --text:#f4f8fd;
-      --textSoft:#c9d6e6;
-      --textDark:#0d2138;
+      --wordTop:#34b56a;
+      --wordBottom:#1f874d;
 
-      --wordTop:#2b8456;
-      --wordBottom:#18553a;
+      --dangerTop:#ff6a7f;
+      --dangerBottom:#c62243;
+
+      --shadow:0 16px 34px rgba(9,35,84,0.22);
+      --shadowSoft:0 10px 22px rgba(9,35,84,0.16);
 
       --edgePad:16px;
     }
@@ -68,24 +69,20 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-
       min-height:100vh;
       min-height:100svh;
       min-height:100dvh;
-
       background:
-        radial-gradient(circle at 18% 10%, rgba(255,255,255,0.10), transparent 18%),
-        radial-gradient(circle at 82% 16%, rgba(201,168,106,0.08), transparent 18%),
-        radial-gradient(circle at 20% 88%, rgba(92,151,219,0.10), transparent 24%),
-        radial-gradient(circle at 84% 78%, rgba(255,255,255,0.05), transparent 18%),
-        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 34%, var(--bg2) 68%, var(--bg3) 100%);
-
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.22), transparent 18%),
+        radial-gradient(circle at 82% 14%, rgba(255,211,109,0.16), transparent 18%),
+        radial-gradient(circle at 18% 82%, rgba(255,255,255,0.10), transparent 18%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08), transparent 18%),
+        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 38%, var(--bgBottom) 72%, var(--bgDeep) 100%);
       padding:
         calc(var(--edgePad) + env(safe-area-inset-top))
         calc(var(--edgePad) + env(safe-area-inset-right))
         calc(var(--edgePad) + env(safe-area-inset-bottom))
         calc(var(--edgePad) + env(safe-area-inset-left));
-
       overflow-x:hidden;
     }
 
@@ -93,29 +90,30 @@
       content:"";
       position:fixed;
       inset:0;
-      pointer-events:none;
       z-index:0;
-      opacity:.18;
+      pointer-events:none;
+      opacity:.12;
       background:
-        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
       background-size:30px 30px;
-      mask-image:radial-gradient(circle at center, black 52%, transparent 100%);
-      -webkit-mask-image:radial-gradient(circle at center, black 52%, transparent 100%);
+      mask-image:radial-gradient(circle at center, black 55%, transparent 100%);
+      -webkit-mask-image:radial-gradient(circle at center, black 55%, transparent 100%);
     }
 
     body::after{
       content:"";
       position:fixed;
-      inset:auto 50% 7% 50%;
-      width:min(86vw, 900px);
-      height:min(86vw, 900px);
+      left:50%;
+      bottom:4%;
       transform:translateX(-50%);
-      pointer-events:none;
-      z-index:0;
+      width:min(88vw, 980px);
+      height:min(88vw, 980px);
       border-radius:50%;
-      background:radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 30%, transparent 68%);
-      filter:blur(36px);
+      z-index:0;
+      pointer-events:none;
+      background:radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 34%, transparent 68%);
+      filter:blur(40px);
     }
 
     button, a{
@@ -139,13 +137,13 @@
 
     .gameBtn{
       border:none;
-      border-radius:14px;
+      border-radius:16px;
       padding:13px 18px;
       cursor:pointer;
-      font-weight:800;
+      font-weight:900;
       font-size:.98rem;
       letter-spacing:.02em;
-      transition:transform .18s, box-shadow .18s, opacity .18s, filter .18s;
+      transition:transform .16s, box-shadow .16s, opacity .16s, filter .16s;
       min-width:min(220px,100%);
       max-width:100%;
       text-decoration:none;
@@ -154,11 +152,7 @@
       justify-content:center;
       text-align:center;
       white-space:normal;
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      box-shadow:
-        0 10px 24px rgba(0,0,0,0.22),
-        inset 0 1px 0 rgba(255,255,255,0.12);
+      box-shadow:var(--shadowSoft);
     }
 
     .gameBtn:hover{
@@ -168,7 +162,7 @@
 
     button:disabled,
     a.disabled{
-      opacity:.48;
+      opacity:.5;
       cursor:not-allowed;
       transform:none !important;
       box-shadow:none !important;
@@ -177,33 +171,38 @@
     }
 
     .btnPrimary{
-      background:linear-gradient(180deg, #df4e66 0%, #b3233d 100%);
-      color:var(--primaryText);
-      border:1px solid rgba(255,255,255,0.08);
+      background:linear-gradient(180deg, #ff667d 0%, #e5485f 52%, #b51f36 100%);
+      color:#fff8fa;
+      border:1px solid rgba(255,255,255,0.16);
+      text-shadow:0 1px 1px rgba(0,0,0,0.18);
     }
 
     .btnAccent{
-      background:linear-gradient(180deg, #d7b57c 0%, #b78d4b 100%);
-      color:var(--accentText);
-      border:1px solid rgba(255,255,255,0.12);
+      background:linear-gradient(180deg, #ffe08a 0%, #ffd36d 52%, #d59d1a 100%);
+      color:#4a3000;
+      border:1px solid rgba(255,255,255,0.20);
     }
 
     .btnSuccess{
-      background:linear-gradient(180deg, #2f7a55 0%, #1d5138 100%);
-      color:var(--successText);
-      border:1px solid rgba(255,255,255,0.10);
+      background:linear-gradient(180deg, #42cf7d 0%, #2fb86b 55%, #1e7f48 100%);
+      color:#f7fff9;
+      border:1px solid rgba(255,255,255,0.16);
     }
 
     .btnGhost{
-      background:linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.08));
-      color:var(--text);
-      border:1px solid rgba(255,255,255,0.14);
+      background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18));
+      color:#ffffff;
+      border:1px solid rgba(255,255,255,0.26);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
     }
 
     .btnSoft{
-      background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(226,234,244,0.92));
-      color:#10233d;
-      border:1px solid rgba(255,255,255,0.70);
+      background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(238,245,252,0.94));
+      color:var(--darkText);
+      border:1px solid rgba(255,255,255,0.76);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
     }
 
     #introOverlay,
@@ -214,14 +213,13 @@
       display:none;
       align-items:center;
       justify-content:center;
-      background:rgba(2,10,20,0.78);
+      background:rgba(10,37,85,0.48);
       z-index:9999;
       padding:
         calc(18px + env(safe-area-inset-top))
         calc(18px + env(safe-area-inset-right))
         calc(18px + env(safe-area-inset-bottom))
         calc(18px + env(safe-area-inset-left));
-      color:var(--text);
       backdrop-filter:blur(8px);
       -webkit-backdrop-filter:blur(8px);
     }
@@ -235,14 +233,13 @@
     .overlayCard{
       width:100%;
       max-width:520px;
-      border-radius:24px;
-      border:1px solid var(--panelDarkBorder);
-      background:
-        linear-gradient(180deg, rgba(14,34,58,0.90), rgba(7,18,33,0.92));
-      padding:22px 18px 18px 18px;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,0.24);
+      background:linear-gradient(180deg, rgba(29,95,196,0.88), rgba(11,49,112,0.92));
+      padding:22px 18px 18px;
       box-shadow:
-        0 24px 60px rgba(0,0,0,0.40),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+        0 24px 60px rgba(8,31,74,0.28),
+        inset 0 1px 0 rgba(255,255,255,0.14);
       color:var(--text);
       max-height:min(92dvh,92vh);
       overflow:auto;
@@ -259,8 +256,8 @@
 
     .overlaySub{
       font-size:1.02rem;
-      font-weight:700;
-      opacity:.96;
+      font-weight:800;
+      opacity:.98;
       margin-bottom:12px;
       line-height:1.4;
       color:var(--textSoft);
@@ -276,17 +273,17 @@
       display:block;
       border-radius:22px;
       filter:
-        drop-shadow(0 0 16px rgba(169,205,255,0.18))
-        drop-shadow(0 0 32px rgba(201,168,106,0.08));
+        drop-shadow(0 0 18px rgba(255,255,255,0.20))
+        drop-shadow(0 0 32px rgba(255,211,109,0.14));
     }
 
     #introInstructions{
       text-align:left;
       font-size:.88rem;
       line-height:1.55;
-      font-weight:700;
+      font-weight:800;
       color:var(--text);
-      opacity:.96;
+      opacity:.98;
       margin:0 0 14px 0;
       white-space:pre-line;
       overflow-wrap:anywhere;
@@ -297,14 +294,14 @@
       font-weight:900;
       line-height:1;
       margin:10px 0;
-      color:#f0d6a2;
-      text-shadow:0 0 18px rgba(240,214,162,0.16);
+      color:#ffe7a8;
+      text-shadow:0 0 18px rgba(255,231,168,0.22);
     }
 
     #countHint{
       font-size:.98rem;
-      font-weight:700;
-      opacity:.92;
+      font-weight:800;
+      opacity:.96;
       color:var(--textSoft);
     }
 
@@ -313,27 +310,25 @@
       flex-direction:column;
       align-items:center;
       gap:8px;
-      margin:10px 0 6px 0;
+      margin:10px 0 8px 0;
       width:100%;
     }
 
     #logoImage{
-      width:min(220px,84vw);
+      width:min(230px,84vw);
       height:auto;
       max-width:84vw;
       max-height:20vh;
-      border-radius:22px;
+      border-radius:24px;
       object-fit:contain;
       background:transparent;
-      mask-image:radial-gradient(circle at center, black 68%, transparent 100%);
-      -webkit-mask-image:radial-gradient(circle at center, black 68%, transparent 100%);
       filter:
-        drop-shadow(0 0 18px rgba(168,204,255,0.16))
-        drop-shadow(0 0 26px rgba(201,168,106,0.06));
+        drop-shadow(0 0 22px rgba(255,255,255,0.22))
+        drop-shadow(0 0 34px rgba(255,211,109,0.16));
     }
 
     @media (min-width:768px){
-      #logoImage{ width:min(270px,30vw); }
+      #logoImage{ width:min(280px,30vw); }
     }
 
     #mainContent{
@@ -352,13 +347,13 @@
     }
 
     #categoryTitle{
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.04em;
       font-size:1.06rem;
-      margin:10px 0 10px 0;
-      opacity:.96;
-      color:var(--textSoft);
+      margin:12px 0 10px 0;
+      color:#f7fbff;
       text-transform:uppercase;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
     }
 
     #categoryGrid{
@@ -374,35 +369,35 @@
     .categoryCard{
       position:relative;
       border:none;
-      border-radius:20px;
+      border-radius:22px;
       overflow:hidden;
       cursor:pointer;
       padding:0;
       min-height:clamp(110px,20vw,170px);
       aspect-ratio:1 / 1;
-      background:linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
-      outline:1px solid rgba(255,255,255,0.10);
+      background:linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.12));
+      outline:2px solid rgba(255,255,255,0.18);
       transition:transform .15s, box-shadow .15s, outline-color .15s, filter .15s;
       text-align:left;
       box-shadow:
-        0 12px 30px rgba(0,0,0,0.24),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
+        0 12px 30px rgba(9,35,84,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
     }
 
     .categoryCard:hover{
       transform:translateY(-1px) scale(1.01);
-      box-shadow:0 18px 38px rgba(0,0,0,0.28);
-      outline-color:rgba(201,168,106,0.34);
+      box-shadow:0 18px 38px rgba(9,35,84,0.22);
+      outline-color:rgba(255,211,109,0.65);
       filter:brightness(1.02);
     }
 
     .categoryCard.selected{
-      outline:2px solid rgba(201,168,106,0.95);
+      outline:3px solid rgba(255,211,109,1);
       box-shadow:
-        0 0 0 1px rgba(201,168,106,0.36),
-        0 18px 44px rgba(0,0,0,0.28);
+        0 0 0 1px rgba(255,211,109,0.34),
+        0 18px 44px rgba(9,35,84,0.24);
       transform:translateY(-1px) scale(1.01);
     }
 
@@ -411,7 +406,7 @@
       height:100%;
       object-fit:contain;
       display:block;
-      background:rgba(4,15,28,0.22);
+      background:rgba(17,62,130,0.10);
     }
 
     .categoryFallbackLabel{
@@ -420,10 +415,10 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:800;
+      font-weight:900;
       font-size:1.05rem;
       padding:14px;
-      background:rgba(7,18,33,0.90);
+      background:rgba(24,79,142,0.92);
       color:#edf4fc;
       opacity:0;
       text-align:center;
@@ -457,92 +452,92 @@
       width:min(100%,260px);
       max-width:260px;
       min-width:160px;
-      padding:11px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,0.12);
-      background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08));
-      color:var(--text);
+      padding:12px 14px;
+      border-radius:16px;
+      border:2px solid rgba(255,255,255,0.34);
+      background:linear-gradient(180deg, rgba(255,255,255,0.97), rgba(241,246,252,0.94));
+      color:#123456;
       outline:none;
-      font-weight:700;
+      font-weight:900;
       font-size:clamp(.95rem,2.5vw,1rem);
       text-align:center;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 8px 18px rgba(0,0,0,0.16);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
+        0 10px 22px rgba(9,35,84,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.80);
     }
 
-    .teamNameInput::placeholder{ color:rgba(232,240,248,0.60); }
+    .teamNameInput::placeholder{
+      color:rgba(18,52,86,0.54);
+    }
+
     .teamNameInput.hidden{ display:none; }
 
     #turnIndicator{
-      font-weight:800;
-      margin:6px 0 0 0;
-      opacity:.96;
-      color:var(--textSoft);
+      font-weight:900;
+      margin:8px 0 0 0;
+      color:#ffffff;
       overflow-wrap:anywhere;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
+      font-size:1.03rem;
     }
 
     #scoreboard{
       display:flex;
       gap:12px;
       flex-wrap:nowrap;
-      background:linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
-      border-radius:18px;
-      padding:10px 12px;
-      margin:8px auto;
-      border:1px solid rgba(255,255,255,0.10);
+      background:linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.15));
+      border-radius:20px;
+      padding:12px 14px;
+      margin:10px auto 8px auto;
+      border:2px solid rgba(255,255,255,0.28);
       width:100%;
-      max-width:620px;
+      max-width:640px;
       justify-content:space-between;
       box-shadow:
-        0 16px 36px rgba(0,0,0,0.22),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+        0 16px 36px rgba(9,35,84,0.16),
+        inset 0 1px 0 rgba(255,255,255,0.22);
       backdrop-filter:blur(12px);
       -webkit-backdrop-filter:blur(12px);
     }
 
     .team{
       text-align:center;
-      font-size:clamp(.85rem,2.5vw,.95rem);
+      font-size:clamp(.92rem,2.5vw,1rem);
       width:50%;
-      color:var(--textSoft);
+      color:#f2f8ff;
       min-width:0;
     }
 
     .teamNameLabel{
       display:block;
-      font-size:clamp(.95rem,3vw,1.05rem);
-      font-weight:800;
+      font-size:clamp(1rem,3vw,1.08rem);
+      font-weight:900;
       line-height:1.15;
-      margin-bottom:2px;
+      margin-bottom:4px;
       cursor:pointer;
-      color:var(--text);
+      color:#ffffff;
       word-break:break-word;
       overflow-wrap:anywhere;
     }
 
     .active{
-      border-bottom:3px solid rgba(201,168,106,0.92);
+      border-bottom:4px solid rgba(255,211,109,1);
       padding-bottom:4px;
     }
 
     #timer{
       font-size:1.12rem;
-      font-weight:800;
-      margin:10px 0 6px 0;
-      color:var(--text);
-      background:linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
-      border:1px solid rgba(255,255,255,0.10);
-      padding:7px 13px;
-      border-radius:13px;
+      font-weight:900;
+      margin:10px 0 8px 0;
+      color:#123456;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(236,243,250,0.92));
+      border:1px solid rgba(255,255,255,0.44);
+      padding:8px 14px;
+      border-radius:14px;
       display:inline-block;
       width:auto;
       max-width:100%;
-      box-shadow:0 10px 24px rgba(0,0,0,0.18);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
+      box-shadow:0 10px 24px rgba(9,35,84,0.14);
     }
 
     #roundStage{
@@ -559,21 +554,21 @@
     #startPromptBtn{
       display:none;
       border:none;
-      border-radius:24px;
-      width:min(100%,680px);
-      min-height:150px;
-      padding:20px 24px;
-      background:linear-gradient(180deg,#df4e66 0%, #b3233d 55%, #8e1729 100%);
+      border-radius:28px;
+      width:min(100%,700px);
+      min-height:156px;
+      padding:22px 26px;
+      background:linear-gradient(180deg,#ff667d 0%, #e5485f 54%, #b51f36 100%);
       color:#fff9fb;
-      font-size:clamp(1.8rem,5vw,3rem);
+      font-size:clamp(1.9rem,5vw,3.1rem);
       font-weight:900;
       letter-spacing:.05em;
       cursor:pointer;
       box-shadow:
-        0 22px 48px rgba(68,10,19,0.34),
-        inset 0 1px 0 rgba(255,255,255,0.18);
-      text-shadow:0 1px 2px rgba(0,0,0,0.30);
-      border:1px solid rgba(255,255,255,0.08);
+        0 22px 48px rgba(104,22,42,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.20);
+      text-shadow:0 1px 2px rgba(0,0,0,0.24);
+      border:1px solid rgba(255,255,255,0.14);
     }
 
     #startPromptBtn.show{
@@ -593,19 +588,19 @@
 
     #word{
       display:none;
-      font-size:clamp(2rem,5.5vw,2.8rem);
+      font-size:clamp(2rem,5.5vw,2.9rem);
       font-weight:900;
       padding:18px 22px;
-      border-radius:18px;
+      border-radius:22px;
       color:#fcfff7;
-      border:1px solid rgba(255,255,255,0.08);
+      border:2px solid rgba(255,255,255,0.12);
       background:linear-gradient(180deg, var(--wordTop) 0%, var(--wordBottom) 100%);
       max-width:100%;
       width:100%;
       word-wrap:break-word;
       overflow-wrap:anywhere;
       line-height:1.12;
-      box-shadow:0 18px 40px rgba(0,0,0,0.24);
+      box-shadow:0 18px 40px rgba(9,35,84,0.20);
       text-shadow:0 1px 1px rgba(0,0,0,0.25);
       min-height:140px;
       align-items:center;
@@ -620,16 +615,16 @@
       max-width:100%;
       min-height:140px;
       padding:18px 22px;
-      border-radius:18px;
+      border-radius:22px;
       font-size:clamp(2.2rem,7vw,5rem);
       font-weight:900;
       line-height:1.08;
       text-align:center;
       align-items:center;
       justify-content:center;
-      box-shadow:0 18px 40px rgba(0,0,0,0.24);
+      box-shadow:0 18px 40px rgba(9,35,84,0.20);
       text-shadow:0 1px 1px rgba(0,0,0,0.25);
-      border:1px solid rgba(255,255,255,0.08);
+      border:2px solid rgba(255,255,255,0.12);
       margin:0;
       overflow-wrap:anywhere;
     }
@@ -640,23 +635,23 @@
 
     #actionFlash.correct{
       color:#fcfff7;
-      background:linear-gradient(180deg, #2f7a55 0%, #1d5138 100%);
+      background:linear-gradient(180deg, #34c873 0%, #1f874d 100%);
     }
 
     #actionFlash.pass{
       color:#fff7f8;
-      background:linear-gradient(180deg, #d74a62 0%, #8f1729 100%);
+      background:linear-gradient(180deg, #ff7488 0%, #c62243 100%);
     }
 
     #status{
       font-size:1rem;
-      font-weight:700;
+      font-weight:900;
       min-height:1.3em;
       margin-bottom:10px;
-      opacity:.96;
-      color:var(--textSoft);
+      color:#ffffff;
       overflow-wrap:anywhere;
       text-align:center;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
     }
 
     #buttonsRow{
@@ -685,17 +680,17 @@
       max-width:420px;
       border-radius:18px;
       background:rgba(0,0,0,0.35);
-      border:1px solid rgba(255,255,255,0.14);
-      box-shadow:0 14px 28px rgba(0,0,0,0.24);
+      border:2px solid rgba(255,255,255,0.18);
+      box-shadow:0 14px 28px rgba(9,35,84,0.20);
       object-fit:contain;
       max-height:60dvh;
     }
 
     #recordPreviewNote{
       font-size:.92rem;
-      font-weight:700;
-      color:var(--textSoft);
-      opacity:.92;
+      font-weight:800;
+      color:#ffffff;
+      opacity:.98;
       overflow-wrap:anywhere;
     }
 
@@ -931,6 +926,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
   <audio id="soundSkip" src="audio/skip.mp3" preload="auto"></audio>
   <audio id="soundTimeUp" src="audio/timeup.mp3" preload="auto"></audio>
   <audio id="soundStart" src="audio/start-round.mp3" preload="auto"></audio>
+  <audio id="soundCategoryTap" src="audiocategory-tap.mp3" preload="auto"></audio>
 
   <div id="foreheadOverlay" aria-hidden="true">
     <div class="overlayCard">
@@ -946,7 +942,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       <div class="overlayTitle">🏆 WINNER</div>
       <div id="winTeam" class="overlaySub"></div>
 
-      <div style="margin:12px 0;font-weight:800;color:var(--text);">
+      <div style="margin:12px 0;font-weight:900;color:var(--text);">
         <span id="finalScoreA"></span><br/>
         <span id="finalScoreB"></span>
       </div>
@@ -1052,6 +1048,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     const soundSkip = document.getElementById("soundSkip");
     const soundTimeUp = document.getElementById("soundTimeUp");
     const soundStart = document.getElementById("soundStart");
+    const soundCategoryTap = document.getElementById("soundCategoryTap");
 
     const actionFlash = document.getElementById("actionFlash");
     const recordPreviewWrap = document.getElementById("recordPreviewWrap");
@@ -1353,6 +1350,14 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     }
 
     function playCategoryTap(){
+      if(soundCategoryTap){
+        try{
+          soundCategoryTap.currentTime = 0;
+          soundCategoryTap.play().catch(()=>{});
+          return;
+        }catch(e){}
+      }
+
       try{
         const ctx = ensureAudioContext();
         if(!ctx) return;
@@ -1591,7 +1596,6 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
         return;
       }
 
-      // UP = pass, DOWN = correct
       if(delta > TILT_THRESHOLD){
         tiltArmed = false;
         lastTiltActionAt = now;
@@ -1640,6 +1644,12 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       }, 250);
     }
 
+    function isLikelySimulator(){
+      const ua = navigator.userAgent || "";
+      const platform = navigator.platform || "";
+      return /Simulator/i.test(ua) || /MacIntel/i.test(platform);
+    }
+
     function recordingSupported(){
       return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
     }
@@ -1647,7 +1657,9 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     function updateRecordingUI(){
       if(!recordingSupported()){
         recordEnabled = false;
-        recordToggleBtn.textContent = "Recording: Not Supported";
+        recordToggleBtn.textContent = isLikelySimulator()
+          ? "Recording: Simulator Limited"
+          : "Recording: Not Supported";
         recordToggleBtn.disabled = true;
         recordToggleBtn.className = "gameBtn btnGhost";
         return;
@@ -1707,7 +1719,9 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       if(!recordingSupported()){
         recordEnabled = false;
         updateRecordingUI();
-        statusEl.textContent = "Recording not supported on this device/browser.";
+        statusEl.textContent = isLikelySimulator()
+          ? "Recording is limited in the simulator. Test recording on a real phone."
+          : "Recording not supported on this device/browser.";
         return false;
       }
 
@@ -1982,10 +1996,10 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
         if(timeLeft <= 10){
           timerEl.style.color = "#fff7f8";
-          timerEl.style.background = "linear-gradient(180deg, rgba(215,74,98,0.36), rgba(143,23,41,0.28))";
+          timerEl.style.background = "linear-gradient(180deg, rgba(255,116,136,0.42), rgba(198,34,67,0.30))";
         }else{
-          timerEl.style.color = "var(--text)";
-          timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))";
+          timerEl.style.color = "#123456";
+          timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(236,243,250,0.92))";
         }
 
         if(timeLeft <= 0) endRound();
@@ -2012,8 +2026,8 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
       stopRecordingIfActive();
 
-      timerEl.style.color = "var(--text)";
-      timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))";
+      timerEl.style.color = "#123456";
+      timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(236,243,250,0.92))";
 
       if(teamTurn === "A"){
         teamTurn = "B";
@@ -2120,8 +2134,8 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       hideWordCard();
       statusEl.textContent = "Choose a category to get started!";
       timerEl.textContent = "Time: 60";
-      timerEl.style.color = "var(--text)";
-      timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))";
+      timerEl.style.color = "#123456";
+      timerEl.style.background = "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(236,243,250,0.92))";
 
       clearLastRecordingUrl();
 
