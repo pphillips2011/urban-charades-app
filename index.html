@@ -759,10 +759,10 @@
 
     #actionFlash.correct{
       color:#ffffff;
-      background:linear-gradient(180deg, #42c7ff 0%, #1697ff 52%, #0b63d8 100%);
+      background:linear-gradient(180deg, #4db8ff 0%, #1e88e5 55%, #1565c0 100%);
       box-shadow:
         0 18px 40px rgba(9,35,84,0.20),
-        0 0 24px rgba(66,199,255,0.35);
+        0 0 24px rgba(77,184,255,0.28);
     }
 
     #actionFlash.pass{
@@ -1017,7 +1017,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
   <audio id="soundSkip" src="audio/skip.mp3" preload="auto"></audio>
   <audio id="soundTimeUp" src="audio/timeup.mp3" preload="auto"></audio>
   <audio id="soundStart" src="audio/start-round.mp3" preload="auto"></audio>
-  <audio id="soundCategoryTap" src="audio/category-tap.mp3" preload="auto"></audio>
+  <audio id="soundTap" src="audio/tap.mp3" preload="auto"></audio>
 
   <div id="foreheadOverlay" aria-hidden="true">
     <div class="overlayCard">
@@ -1088,74 +1088,57 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
     <div id="buttonsRow">
       <button id="recordToggleBtn" class="gameBtn btnSuccess">Recording: On</button>
-      <button id="saveToPhoneToggleBtn" class="gameBtn btnGhost">Save to Phone: Off</button>
-      <a id="downloadLink" class="gameBtn btnSuccess disabled" href="#" style="display:none;">Save Last Recording</a>
+      <a id="downloadLink" class="gameBtn btnSuccess" href="#" style="display:none;">Save Last Recording</a>
       <button id="shareRecordingBtn" class="gameBtn btnGhost" style="display:none;min-width:220px;">Share Last Recording</button>
-      <button id="shareLinkBtn" class="gameBtn btnPrimary" style="display:none;min-width:220px;">Share Video Link</button>
     </div>
 
     <div id="recordPreviewWrap">
       <video id="recordPreview" controls playsinline preload="metadata"></video>
       <div id="recordPreviewNote">If Save does not work on Android, use Share Last Recording.</div>
-      <div id="shareBrandNote" style="display:none;font-weight:900;color:#fff;margin-top:8px;">Urban Charades • Tag @UrbanCharadesGame</div>
     </div>
   </div>
 
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-
   <script>
-    const CapacitorApp = window.Capacitor || null;
-    const NativeRecorder = CapacitorApp?.Plugins?.NativeRecorder || null;
-    const ScreenOrientationPlugin = CapacitorApp?.Plugins?.ScreenOrientation || null;
-    const FilesystemPlugin = CapacitorApp?.Plugins?.Filesystem || null;
-    const SharePlugin = CapacitorApp?.Plugins?.Share || null;
-
-    // REPLACE THESE WITH YOUR REAL FIREBASE VALUES
-    const FIREBASE_CONFIG = {
-      apiKey: "PASTE_YOUR_API_KEY",
-      authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-      projectId: "PASTE_YOUR_PROJECT_ID",
-      storageBucket: "PASTE_YOUR_BUCKET.appspot.com",
-      messagingSenderId: "PASTE_YOUR_SENDER_ID",
-      appId: "PASTE_YOUR_APP_ID"
+    const Cap = window.Capacitor || {
+      getPlatform: () => {
+        const ua = navigator.userAgent || "";
+        if (/android/i.test(ua)) return "android";
+        if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
+        return "web";
+      },
+      convertFileSrc: (v) => v,
+      isNativePlatform: () => false,
+      Plugins: {}
     };
 
-    let firebaseStorageRef = null;
-    function initFirebaseStorage(){
-      try{
-        if(!window.firebase) return false;
-        if(!firebase.apps.length){
-          firebase.initializeApp(FIREBASE_CONFIG);
+    const NativeRecorder = {
+      async startFrontRecording(){
+        const plugin = Cap?.Plugins?.VideoRecorder;
+        if (plugin?.startRecording) {
+          return plugin.startRecording({
+            position: "front"
+          });
         }
-        firebaseStorageRef = firebase.storage().ref();
-        return true;
-      }catch(e){
-        console.error("Firebase init failed", e);
-        return false;
+        throw new Error("Recorder plugin unavailable");
+      },
+
+      async stopRecording(){
+        const plugin = Cap?.Plugins?.VideoRecorder;
+        if (plugin?.stopRecording) {
+          return plugin.stopRecording();
+        }
+        throw new Error("Recorder plugin unavailable");
       }
-    }
+    };
 
-
-    function getPlatform() {
-      try {
-        return CapacitorApp && CapacitorApp.getPlatform ? CapacitorApp.getPlatform() : "web";
-      } catch (e) {
-        return "web";
-      }
-    }
-
-    function isNativeMobile() {
-      const p = getPlatform();
-      return p === "ios" || p === "android";
-    }
+    const ScreenOrientationPlugin =
+      Cap?.Plugins?.ScreenOrientation ||
+      window.ScreenOrientation ||
+      null;
 
     const recordToggleBtn = document.getElementById("recordToggleBtn");
-    const saveToPhoneToggleBtn = document.getElementById("saveToPhoneToggleBtn");
     const downloadLink = document.getElementById("downloadLink");
     const shareRecordingBtn = document.getElementById("shareRecordingBtn");
-    const shareLinkBtn = document.getElementById("shareLinkBtn");
     const startPromptBtn = document.getElementById("startPromptBtn");
     const roundLengthSelect = document.getElementById("roundLengthSelect");
 
@@ -1196,12 +1179,11 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     const soundSkip = document.getElementById("soundSkip");
     const soundTimeUp = document.getElementById("soundTimeUp");
     const soundStart = document.getElementById("soundStart");
-    const soundCategoryTap = document.getElementById("soundCategoryTap");
+    const soundTap = document.getElementById("soundTap");
 
     const actionFlash = document.getElementById("actionFlash");
     const recordPreviewWrap = document.getElementById("recordPreviewWrap");
     const recordPreview = document.getElementById("recordPreview");
-    const shareBrandNote = document.getElementById("shareBrandNote");
     const confettiLayer = document.getElementById("confettiLayer");
 
     const CATEGORY_DEFS = [
@@ -1324,14 +1306,13 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     let countdownTimers = [];
 
     let latestTiltValue = null;
+    let smoothedTiltValue = null;
     let tiltBaseline = null;
     let tiltArmed = true;
     let lastTiltActionAt = 0;
 
     let audioCtx = null;
     let recordEnabled = true;
-    let saveToPhoneEnabled = false;
-    let lastCloudRecordingUrl = "";
 
     let recordStream = null;
     let mediaRecorder = null;
@@ -1339,13 +1320,33 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     let lastRecordingUrl = "";
     let lastRecordingBlob = null;
     let lastRecordingMimeType = "video/webm";
+    let lastUploadedVideoUrl = "";
+    let lastSavedFileName = "";
+    let lastNativeFileUri = "";
 
     const FOREHEAD_READY_MIN_MS = 650;
-    const TRANSITION_DELAY = 900;
+    const TRANSITION_DELAY = 700;
 
-    let TILT_THRESHOLD = 15;
-    let TILT_RESET = 8;
-    let TILT_COOLDOWN = 900;
+    let TILT_THRESHOLD = 16;
+    let TILT_RESET = 7;
+    let TILT_COOLDOWN = 850;
+
+    function getPlatformName(){
+      return Cap.getPlatform ? Cap.getPlatform() : "web";
+    }
+
+    function isNativeMobile(){
+      const p = getPlatformName();
+      return p === "ios" || p === "android";
+    }
+
+    function isIOS(){
+      return getPlatformName() === "ios";
+    }
+
+    function isAndroid(){
+      return getPlatformName() === "android";
+    }
 
     function webRecordingSupported(){
       return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
@@ -1353,7 +1354,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
     async function lockGameLandscape(){
       try {
-        if (ScreenOrientationPlugin && ScreenOrientationPlugin.lock) {
+        if (ScreenOrientationPlugin?.lock) {
           await ScreenOrientationPlugin.lock({ orientation: "landscape-primary" });
         }
       } catch(e){}
@@ -1361,16 +1362,16 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
     async function unlockGameOrientation(){
       try {
-        if (ScreenOrientationPlugin && ScreenOrientationPlugin.unlock) {
+        if (ScreenOrientationPlugin?.unlock) {
           await ScreenOrientationPlugin.unlock();
         }
       } catch(e){}
     }
 
     function applyTiltSettings(){
-      TILT_THRESHOLD = 15;
-      TILT_RESET = 8;
-      TILT_COOLDOWN = 900;
+      TILT_THRESHOLD = 16;
+      TILT_RESET = 7;
+      TILT_COOLDOWN = 850;
     }
 
     function ensureAudioContext(){
@@ -1558,7 +1559,18 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
         showWordCard(drawWord());
         hideActionFlash();
         transitionLock = false;
+
+        setTimeout(() => {
+          calibrateTilt();
+        }, 140);
       }, TRANSITION_DELAY);
+    }
+
+    function normalizeAngle(angle){
+      if (typeof angle !== "number" || Number.isNaN(angle)) return 0;
+      if (angle === -90) return 270;
+      if (angle < 0) return (angle % 360 + 360) % 360;
+      return angle % 360;
     }
 
     function getOrientationAngle(){
@@ -1575,9 +1587,11 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       const gamma = typeof e.gamma === "number" ? e.gamma : null;
       const beta = typeof e.beta === "number" ? e.beta : null;
       const angle = getOrientationAngle();
+      const normalized = normalizeAngle(angle);
 
-      if(angle === 90) return gamma;
-      if(angle === -90 || angle === 270) return gamma !== null ? -gamma : null;
+      if(normalized === 90) return gamma;
+      if(normalized === 270) return gamma !== null ? -gamma : null;
+
       return beta;
     }
 
@@ -1585,29 +1599,34 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       const v = extractTiltValue(e);
       if(v === null) return false;
       const absV = Math.abs(v);
-      return absV >= 20 && absV <= 70;
+      return absV >= 28 && absV <= 78;
     }
 
     function calibrateTilt(){
-      if(latestTiltValue === null){
+      const candidate = smoothedTiltValue ?? latestTiltValue;
+      if(candidate === null){
         tiltBaseline = null;
         return false;
       }
 
-      tiltBaseline = latestTiltValue;
+      tiltBaseline = candidate;
       tiltArmed = false;
-      lastTiltActionAt = 0;
+      lastTiltActionAt = Date.now();
 
       setTimeout(() => {
         tiltArmed = true;
-      }, 300);
+      }, 250);
 
       return true;
     }
 
     function onDeviceOrientation(e){
       const v = extractTiltValue(e);
-      if(v !== null) latestTiltValue = v;
+
+      if(v !== null){
+        latestTiltValue = v;
+        smoothedTiltValue = smoothedTiltValue === null ? v : (smoothedTiltValue * 0.78) + (v * 0.22);
+      }
 
       if(waitingForForeheadPose){
         if(isForeheadPose(e)){
@@ -1623,34 +1642,44 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
         return;
       }
 
-      if(v === null) return;
+      const activeTilt = smoothedTiltValue ?? v;
+      if(activeTilt === null) return;
       if(!roundActive || preRoundActive || matchOver || transitionLock) return;
       if(tiltBaseline === null) return;
 
       const now = Date.now();
-      if(now - lastTiltActionAt < TILT_COOLDOWN) return;
-
-      const delta = v - tiltBaseline;
 
       if(!tiltArmed){
-        if(Math.abs(delta) <= TILT_RESET){
+        if(Math.abs(activeTilt - tiltBaseline) <= TILT_RESET){
           tiltArmed = true;
         }
+        tiltBaseline = (tiltBaseline * 0.92) + (activeTilt * 0.08);
         return;
       }
 
+      if(now - lastTiltActionAt < TILT_COOLDOWN) return;
+
+      const delta = activeTilt - tiltBaseline;
+
+      // DOWN = CORRECT
       if(delta <= -TILT_THRESHOLD){
         tiltArmed = false;
         lastTiltActionAt = now;
+        tiltBaseline = activeTilt;
         correctWord();
         return;
       }
 
+      // UP = PASS
       if(delta >= TILT_THRESHOLD){
         tiltArmed = false;
         lastTiltActionAt = now;
+        tiltBaseline = activeTilt;
         skipWord();
+        return;
       }
+
+      tiltBaseline = (tiltBaseline * 0.96) + (activeTilt * 0.04);
     }
 
     async function enableTiltListening(){
@@ -1699,13 +1728,13 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       }
       lastRecordingUrl = "";
       lastRecordingBlob = null;
+      lastUploadedVideoUrl = "";
+      lastNativeFileUri = "";
       recordPreview.removeAttribute("src");
       recordPreview.load();
       recordPreviewWrap.style.display = "none";
       downloadLink.style.display = "none";
       shareRecordingBtn.style.display = "none";
-      shareBrandNote.style.display = "none";
-      clearCloudLink();
     }
 
     async function ensureWebRecordStream(){
@@ -1746,21 +1775,101 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     }
 
     function updateRecordingActions(){
-      if(!lastRecordingUrl){
+      if(!lastRecordingUrl && !lastNativeFileUri && !lastRecordingBlob){
         downloadLink.style.display = "none";
         shareRecordingBtn.style.display = "none";
         recordPreviewWrap.style.display = "none";
-        shareLinkBtn.style.display = "none";
         return;
       }
 
-      downloadLink.href = lastRecordingUrl;
-      downloadLink.download = `urban-charades-${Date.now()}.${(lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm"}`;
-      downloadLink.style.display = "inline-flex";
-      recordPreview.src = lastRecordingUrl;
-      recordPreviewWrap.style.display = "flex";
+      if(lastRecordingUrl){
+        recordPreview.src = lastRecordingUrl;
+        recordPreviewWrap.style.display = "flex";
+      }
+
       shareRecordingBtn.style.display = "inline-flex";
-      shareLinkBtn.style.display = lastCloudRecordingUrl ? "inline-flex" : "none";
+      shareRecordingBtn.textContent = "Share Last Recording";
+
+      downloadLink.style.display = "inline-flex";
+      downloadLink.textContent = isNativeMobile() ? "Save Last Recording" : "Download Last Recording";
+      downloadLink.classList.remove("disabled");
+
+      if(!isNativeMobile() && lastRecordingUrl){
+        downloadLink.href = lastRecordingUrl;
+      }
+    }
+
+    async function persistRecording(blob){
+      if(!blob) return;
+
+      const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
+      const fileName = `urban-charades-${Date.now()}.${ext}`;
+      lastSavedFileName = fileName;
+
+      try{
+        if(window.uploadVideo){
+          lastUploadedVideoUrl = await window.uploadVideo(blob, fileName);
+          console.log("Uploaded video URL:", lastUploadedVideoUrl);
+        }
+      }catch(e){
+        console.error("Upload failed:", e);
+      }
+    }
+
+    async function blobToBase64(blob){
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onloadend = () => {
+          const result = reader.result || "";
+          const base64 = String(result).split(",")[1] || "";
+          resolve(base64);
+        };
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function writeBlobToNativeFile(blob, fileName){
+      const Filesystem = Cap?.Plugins?.Filesystem;
+      if(!Filesystem || !blob) return "";
+
+      const base64Data = await blobToBase64(blob);
+      const path = `urban-charades/${fileName}`;
+
+      try{
+        await Filesystem.mkdir({
+          path: "urban-charades",
+          directory: "DOCUMENTS",
+          recursive: true
+        });
+      }catch(e){}
+
+      await Filesystem.writeFile({
+        path,
+        data: base64Data,
+        directory: "DOCUMENTS",
+        recursive: true
+      });
+
+      const uriResult = await Filesystem.getUri({
+        path,
+        directory: "DOCUMENTS"
+      });
+
+      return uriResult?.uri || "";
+    }
+
+    async function ensureShareableRecordingFile(){
+      if(lastNativeFileUri) return lastNativeFileUri;
+
+      if(lastRecordingBlob){
+        const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
+        const fileName = lastSavedFileName || `urban-charades-${Date.now()}.${ext}`;
+        lastNativeFileUri = await writeBlobToNativeFile(lastRecordingBlob, fileName);
+        return lastNativeFileUri;
+      }
+
+      return "";
     }
 
     async function startRecordingForRound(){
@@ -1770,16 +1879,14 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
 
       if(isNativeMobile()){
         try{
-          if (NativeRecorder && NativeRecorder.startFrontRecording) {
+          if(NativeRecorder?.startFrontRecording){
             await NativeRecorder.startFrontRecording({ withAudio: true });
-          } else {
-            statusEl.textContent = "Native recorder not available.";
+            statusEl.textContent = "🎥 Recording started.";
+            return;
           }
-          return;
         }catch(e){
-          console.error(e);
-          statusEl.textContent = "Recording could not start.";
-          return;
+          console.error("Native recording start failed:", e);
+          statusEl.textContent = "Native recording failed. Trying fallback...";
         }
       }
 
@@ -1807,19 +1914,32 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
           try{
             if(!mediaChunks.length){
               releaseRecordStream();
+              statusEl.textContent = "No recording data captured.";
               return;
             }
 
             const blobType = mediaChunks[0].type || "video/webm";
             const blob = new Blob(mediaChunks, { type: blobType });
-            await finalizeRecordingBlob(blob);
+            lastRecordingBlob = blob;
+            window.lastRecordingBlob = blob;
+            lastRecordingMimeType = blobType;
+            lastRecordingUrl = URL.createObjectURL(blob);
+
+            await persistRecording(blob);
+            updateRecordingActions();
+
+            statusEl.textContent = lastUploadedVideoUrl
+              ? "✅ Recording saved and uploaded."
+              : "✅ Recording ready.";
           } finally {
             releaseRecordStream();
           }
         };
 
         mediaRecorder.start();
+        statusEl.textContent = "🎥 Fallback recording started.";
       }catch(e){
+        console.error("Fallback recording failed:", e);
         statusEl.textContent = "Recording could not start.";
       }
     }
@@ -1827,22 +1947,52 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     async function stopRecordingIfActive(){
       if(isNativeMobile()){
         try{
-          const result = (NativeRecorder && NativeRecorder.stopRecording)
-            ? await NativeRecorder.stopRecording()
-            : null;
+          if(NativeRecorder?.stopRecording){
+            const result = await NativeRecorder.stopRecording();
+            console.log("Recording result:", result);
 
-          if(result && result.path){
-            const fileUrl = CapacitorApp && CapacitorApp.convertFileSrc
-              ? CapacitorApp.convertFileSrc(result.path)
-              : result.path;
-            const response = await fetch(fileUrl);
-            const blob = await response.blob();
-            await finalizeRecordingBlob(blob);
+            const nativePath =
+              result?.path ||
+              result?.filePath ||
+              result?.fileUrl ||
+              result?.url ||
+              result?.videoUrl;
+
+            if(nativePath){
+              lastNativeFileUri = nativePath;
+
+              const previewUrl = Cap.convertFileSrc ? Cap.convertFileSrc(nativePath) : nativePath;
+              lastRecordingUrl = previewUrl;
+
+              recordPreview.src = previewUrl;
+              recordPreview.load();
+
+              try{
+                const response = await fetch(previewUrl);
+                const blob = await response.blob();
+                if(blob && blob.size){
+                  lastRecordingBlob = blob;
+                  window.lastRecordingBlob = blob;
+                  lastRecordingMimeType = blob.type || "video/mp4";
+                  if(!lastSavedFileName){
+                    lastSavedFileName = `urban-charades-${Date.now()}.mp4`;
+                  }
+                  await persistRecording(blob);
+                }
+              }catch(e){
+                console.log("Blob conversion failed:", e);
+              }
+
+              updateRecordingActions();
+              statusEl.textContent = "✅ Recording ready.";
+              return;
+            }
+
+            console.log("Native stop returned no usable file path:", result);
           }
         }catch(e){
-          console.error(e);
+          console.error("Native stop failed:", e);
         }
-        return;
       }
 
       try{
@@ -1850,189 +2000,87 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
           mediaRecorder.stop();
         }else{
           releaseRecordStream();
+          statusEl.textContent = "No active recording found.";
         }
       }catch(e){
+        console.error("Fallback stop failed:", e);
         releaseRecordStream();
       }
     }
 
     async function shareLastRecording(){
-      if(!lastRecordingUrl) return;
+      const Share = Cap?.Plugins?.Share;
 
-      try{
-        if(SharePlugin && SharePlugin.share){
-          await SharePlugin.share({
-            title: "Urban Charades Recording",
-            text: "My latest Urban Charades round",
-            url: lastRecordingUrl,
-            dialogTitle: "Share your recording"
-          });
-          return;
-        }
-
-        if(navigator.share){
-          await navigator.share({
-            title: "Urban Charades Recording",
-            text: "My latest Urban Charades round",
-            url: lastRecordingUrl
-          });
-          return;
-        }
-      }catch(e){
-        if(e?.name !== "AbortError"){
-          statusEl.textContent = "Sharing failed.";
-        }
+      if(!lastRecordingUrl && !lastUploadedVideoUrl && !lastRecordingBlob && !lastNativeFileUri){
+        statusEl.textContent = "No recording found to share.";
         return;
       }
 
-      statusEl.textContent = "Use Save Last Recording in browser.";
-    }
+      if(isNativeMobile() && Share?.share){
+        try{
+          const nativeUri = await ensureShareableRecordingFile();
 
-
-    function updateSaveToPhoneUI(){
-      saveToPhoneToggleBtn.textContent = saveToPhoneEnabled ? "Save to Phone: On" : "Save to Phone: Off";
-      saveToPhoneToggleBtn.className = saveToPhoneEnabled ? "gameBtn btnSuccess" : "gameBtn btnGhost";
-    }
-
-    function clearCloudLink(){
-      lastCloudRecordingUrl = "";
-      shareLinkBtn.style.display = "none";
-    }
-
-    function getShareCaption(url){
-      return [
-        "I just played Urban Charades 😂🔥",
-        "Can your crew beat this round?",
-        url,
-        "Download Urban Charades and tag @UrbanCharadesGame",
-        "#UrbanCharades #CharadesNight #GameNight #PartyGame"
-      ].join("\n");
-    }
-
-    function blobToBase64(blob){
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = String(reader.result || "");
-          resolve(result.split(",")[1] || "");
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-
-    async function saveBlobToPhone(blob){
-      if(!FilesystemPlugin || !blob) return "";
-      try{
-        const ext = (blob.type || "").includes("mp4") ? "mp4" : "webm";
-        const data = await blobToBase64(blob);
-        const fileName = `urban-charades-${Date.now()}.${ext}`;
-        const result = await FilesystemPlugin.writeFile({
-          path: fileName,
-          data,
-          directory: "DOCUMENTS",
-          recursive: true
-        });
-        return result?.uri || "";
-      }catch(e){
-        console.error("Save to phone failed", e);
-        return "";
-      }
-    }
-
-    async function uploadRecordingToCloud(blob){
-      if(!blob) return "";
-      try{
-        if(!firebaseStorageRef && !initFirebaseStorage()){
-          statusEl.textContent = "Firebase is not configured yet.";
-          return "";
-        }
-
-        const ext = (blob.type || "").includes("mp4") ? "mp4" : "webm";
-        const filePath = `recordings/${Date.now()}.${ext}`;
-        const metadata = {
-          contentType: blob.type || "video/webm",
-          customMetadata: {
-            app: "Urban Charades",
-            category: selectedCategory || "unknown",
-            roundLength: String(roundSeconds || 60),
-            teamTurn: teamTurn || "A",
-            campaign: "ugc-share"
+          if(nativeUri){
+            await Share.share({
+              title: "Urban Charades Recording",
+              text: "Check out my Urban Charades video!",
+              files: [nativeUri],
+              dialogTitle: "Share your recording"
+            });
+            statusEl.textContent = "Opened share options.";
+            return;
           }
-        };
 
-        const snapshot = await firebaseStorageRef.child(filePath).put(blob, metadata);
-        const url = await snapshot.ref.getDownloadURL();
-        lastCloudRecordingUrl = url;
-        shareLinkBtn.style.display = "inline-flex";
-        return url;
-      }catch(e){
-        console.error("Cloud upload failed", e);
-        statusEl.textContent = "Cloud upload failed.";
-        return "";
-      }
-    }
-
-    async function shareCloudRecordingLink(){
-      if(!lastCloudRecordingUrl){
-        statusEl.textContent = "No cloud link available yet.";
-        return;
+          if(lastUploadedVideoUrl){
+            await Share.share({
+              title: "Urban Charades Recording",
+              text: "Check out my Urban Charades video!",
+              url: lastUploadedVideoUrl,
+              dialogTitle: "Share your recording"
+            });
+            statusEl.textContent = "Opened share options.";
+            return;
+          }
+        }catch(e){
+          console.log("Native share failed:", e);
+        }
       }
 
-      const message = getShareCaption(lastCloudRecordingUrl);
+      const blobToShare = lastRecordingBlob || window.lastRecordingBlob;
 
-      try{
-        if(SharePlugin && SharePlugin.share){
-          await SharePlugin.share({
-            title: "Urban Charades Clip",
-            text: message,
-            url: lastCloudRecordingUrl,
-            dialogTitle: "Share your Urban Charades clip"
-          });
-        }else if(navigator.share){
+      if(navigator.share && blobToShare){
+        try{
+          const file = new File(
+            [blobToShare],
+            lastSavedFileName || "urban-charades-recording.webm",
+            { type: lastRecordingMimeType || "video/webm" }
+          );
+
           await navigator.share({
-            title: "Urban Charades Clip",
-            text: message,
-            url: lastCloudRecordingUrl
+            title: "Urban Charades Recording",
+            text: "Check out my Urban Charades video!",
+            files: [file]
           });
-        }else if(navigator.clipboard){
-          await navigator.clipboard.writeText(message);
-          statusEl.textContent = "Link copied to clipboard!";
-        }
-      }catch(e){
-        if(e?.name !== "AbortError"){
-          statusEl.textContent = "Share link failed.";
-        }
-      }
-    }
-
-    async function finalizeRecordingBlob(blob){
-      if(!blob) return;
-
-      lastRecordingBlob = blob;
-      lastRecordingMimeType = blob.type || "video/webm";
-      if(lastRecordingUrl && lastRecordingUrl.startsWith("blob:")){
-        URL.revokeObjectURL(lastRecordingUrl);
-      }
-      lastRecordingUrl = URL.createObjectURL(blob);
-
-      updateRecordingActions();
-      shareBrandNote.style.display = "block";
-
-      if(saveToPhoneEnabled && isNativeMobile()){
-        const savedUri = await saveBlobToPhone(blob);
-        if(savedUri){
-          console.log("Saved to phone:", savedUri);
+          return;
+        }catch(e){
+          console.log("File share failed:", e);
         }
       }
 
-      const url = await uploadRecordingToCloud(blob);
-
-      if(url){
-        statusEl.textContent = "✅ Recording ready. Share your clip and tag @UrbanCharadesGame!";
-      }else{
-        statusEl.textContent = "✅ Recording ready. Local preview is available.";
+      if(navigator.share && lastUploadedVideoUrl){
+        try{
+          await navigator.share({
+            title: "Urban Charades Recording",
+            text: "Check out my Urban Charades video!",
+            url: lastUploadedVideoUrl
+          });
+          return;
+        }catch(e){
+          console.log("URL share failed:", e);
+        }
       }
+
+      statusEl.textContent = "Sharing not supported on this phone.";
     }
 
     function launchConfettiBurst(count = 90){
@@ -2078,8 +2126,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
         btn.addEventListener("click", ()=>{
           if(matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
 
-          safePlay(soundCategoryTap, 900, 120);
-
+          safePlay(soundTap, 640, 90);
           btn.classList.remove("tapPop");
           void btn.offsetWidth;
           btn.classList.add("tapPop");
@@ -2166,9 +2213,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
       showWordCard(drawWord());
       setFocusMode(true);
 
-      setTimeout(() => calibrateTilt(), 250);
-      setTimeout(() => calibrateTilt(), 700);
-      setTimeout(() => calibrateTilt(), 1200);
+      setTimeout(() => calibrateTilt(), 350);
 
       safePlay(soundStart, 880, 180);
       await startRecordingForRound();
@@ -2293,9 +2338,7 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     function enterGame(){
       introOverlay.classList.remove("show");
       updateRecordingUI();
-      updateSaveToPhoneUI();
       updateStartPrompt();
-      initFirebaseStorage();
       statusEl.textContent = "Choose a category to get started!";
       showWordCard("Choose a category to get started!");
 
@@ -2314,18 +2357,76 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     enterAppBtn.onclick = enterGame;
     startPromptBtn.onclick = beginCountdownPrompt;
     shareRecordingBtn.onclick = shareLastRecording;
-    shareLinkBtn.onclick = shareCloudRecordingLink;
+
+    downloadLink.onclick = async (e) => {
+      e.preventDefault();
+
+      if(isNativeMobile()){
+        try{
+          const Share = Cap?.Plugins?.Share;
+          const nativeUri = await ensureShareableRecordingFile();
+
+          if(nativeUri && Share?.share){
+            await Share.share({
+              title: "Save Urban Charades Recording",
+              text: "Save or send this recording.",
+              files: [nativeUri],
+              dialogTitle: "Save recording"
+            });
+            statusEl.textContent = "Opened save/share options.";
+            return;
+          }
+
+          statusEl.textContent = "Could not prepare recording file.";
+          return;
+        }catch(err){
+          console.error(err);
+          statusEl.textContent = "Save failed on this device.";
+          return;
+        }
+      }
+
+      if(lastRecordingBlob || window.lastRecordingBlob){
+        try{
+          const blobToSave = lastRecordingBlob || window.lastRecordingBlob;
+          const url = URL.createObjectURL(blobToSave);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          statusEl.textContent = "Saving to device...";
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          return;
+        }catch(e){
+          console.error(e);
+        }
+      }
+
+      if(lastRecordingUrl){
+        try{
+          const a = document.createElement("a");
+          a.href = lastRecordingUrl;
+          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          statusEl.textContent = "Saving to device...";
+          return;
+        }catch(e){
+          console.error(e);
+        }
+      }
+
+      statusEl.textContent = "Save failed on this device.";
+    };
 
     recordToggleBtn.onclick = () => {
       recordEnabled = !recordEnabled;
       updateRecordingUI();
       statusEl.textContent = recordEnabled ? "🎥 Recording is ON." : "🎥 Recording turned off.";
-    };
-
-    saveToPhoneToggleBtn.onclick = () => {
-      saveToPhoneEnabled = !saveToPhoneEnabled;
-      updateSaveToPhoneUI();
-      statusEl.textContent = saveToPhoneEnabled ? "📱 Save to phone is ON." : "📱 Save to phone is OFF.";
     };
 
     playAgainBtn.onclick = async () => {
@@ -2367,8 +2468,8 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     });
 
     window.addEventListener("orientationchange", () => {
-      if(roundActive || preRoundActive){
-        setTimeout(() => calibrateTilt(), 250);
+      if(preRoundActive || roundActive){
+        setTimeout(() => calibrateTilt(), 350);
       }
     });
 
@@ -2392,19 +2493,65 @@ Repost &amp; tag us @UrbanCharadesGame.</div>
     updateTurnUI();
     buildCategoryGrid();
     updateRecordingUI();
-    updateSaveToPhoneUI();
     updateStartPrompt();
     hideActionFlash();
     showWordCard("Choose a category to get started!");
     timerEl.textContent = `Time: ${roundLengthSelect.value}`;
-
-    initFirebaseStorage();
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(()=>{});
       });
     }
+
+    window.addEventListener("beforeunload", () => {
+      clearInterval(timerInterval);
+      clearCountdownTimers();
+      clearTimeout(actionFlashTimer);
+      releaseRecordStream();
+      if(lastRecordingUrl && lastRecordingUrl.startsWith("blob:")){
+        URL.revokeObjectURL(lastRecordingUrl);
+      }
+    });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCWzHLbbVDAFcFUttBmE73umr2pkfOnlQ",
+      authDomain: "urban-charades.firebaseapp.com",
+      projectId: "urban-charades",
+      storageBucket: "urban-charades.firebasestorage.app",
+      messagingSenderId: "29774201320",
+      appId: "1:29774201320:web:13dea776a1b2137ce2a45d"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const storage = getStorage(firebaseApp);
+
+    async function uploadVideo(fileBlob, fileName = "") {
+      try {
+        if (!fileBlob) throw new Error("No video blob provided");
+
+        const safeName = fileName && typeof fileName === "string"
+          ? fileName.replace(/[^a-zA-Z0-9._-]/g, "_")
+          : `urban_charades_${Date.now()}.mp4`;
+
+        const videoRef = ref(storage, `videos/${safeName}`);
+        await uploadBytes(videoRef, fileBlob);
+        const url = await getDownloadURL(videoRef);
+
+        console.log("Video uploaded:", url);
+        return url;
+      } catch (err) {
+        console.error("Firebase upload failed:", err);
+        throw err;
+      }
+    }
+
+    window.uploadVideo = uploadVideo;
   </script>
 </body>
 </html>
