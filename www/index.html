@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#3b93ff" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+
+  <title>Urban Charades</title>
+
+  <style>
+    :root{
+      --bgTop:#73c3ff;
+      --bgMid:#3186f4;
+      --bgBottom:#1457bc;
+      --bgDeep:#0b347b;
+      --white:#ffffff;
+      --text:#ffffff;
+      --textSoft:#edf6ff;
+      --darkText:#123456;
+      --primary:#e5485f;
+      --gold:#ffd36d;
+      --success:#2fb86b;
+      --wordTop:#3ad17b;
+      --wordBottom:#218a50;
+      --dangerTop:#ff7488;
+      --dangerBottom:#c62243;
+      --shadow:0 16px 34px rgba(9,35,84,0.22);
+      --shadowSoft:0 10px 22px rgba(9,35,84,0.16);
+      --edgePad:16px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+      width:100%;
+      height:100%;
+      min-height:100dvh;
+    }
+
+    body{
+      position:relative;
+      margin:0;
+      color:var(--text);
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+      min-height:100svh;
+      min-height:100dvh;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,0.24), transparent 18%),
+        radial-gradient(circle at 85% 12%, rgba(255,211,109,0.16), transparent 18%),
+        radial-gradient(circle at 18% 82%, rgba(255,255,255,0.10), transparent 18%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08), transparent 18%),
+        linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 38%, var(--bgBottom) 72%, var(--bgDeep) 100%);
+      padding:
+        calc(var(--edgePad) + env(safe-area-inset-top))
+        calc(var(--edgePad) + env(safe-area-inset-right))
+        calc(var(--edgePad) + env(safe-area-inset-bottom))
+        calc(var(--edgePad) + env(safe-area-inset-left));
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      opacity:.12;
+      background:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size:30px 30px;
+      mask-image:radial-gradient(circle at center, black 55%, transparent 100%);
+      -webkit-mask-image:radial-gradient(circle at center, black 55%, transparent 100%);
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      left:50%;
+      bottom:4%;
+      transform:translateX(-50%);
+      width:min(88vw, 980px);
+      height:min(88vw, 980px);
+      border-radius:50%;
+      z-index:0;
+      pointer-events:none;
+      background:radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 34%, transparent 68%);
+      filter:blur(40px);
+    }
+
+    button, a, select, input{
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .noSelect{
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    #header,
+    #mainContent,
+    #introOverlay,
+    #foreheadOverlay,
+    #winOverlay,
+    #confettiLayer{
+      position:relative;
+      z-index:1;
+    }
+
+    .gameBtn{
+      border:none;
+      border-radius:16px;
+      padding:13px 18px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:.98rem;
+      letter-spacing:.02em;
+      transition:transform .16s, box-shadow .16s, opacity .16s, filter .16s;
+      min-width:min(220px,100%);
+      max-width:100%;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      white-space:normal;
+      box-shadow:var(--shadowSoft);
+    }
+
+    .gameBtn:hover{
+      transform:translateY(-1px) scale(1.01);
+      filter:brightness(1.03);
+    }
+
+    .gameBtn:active{
+      transform:scale(.98);
+    }
+
+    button:disabled,
+    a.disabled{
+      opacity:.5;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:none !important;
+      pointer-events:none;
+      filter:none !important;
+    }
+
+    .btnPrimary{
+      background:linear-gradient(180deg, #ff667d 0%, #e5485f 52%, #b51f36 100%);
+      color:#fff8fa;
+      border:1px solid rgba(255,255,255,0.16);
+      text-shadow:0 1px 1px rgba(0,0,0,0.18);
+    }
+
+    .btnAccent{
+      background:linear-gradient(180deg, #ffe08a 0%, #ffd36d 52%, #d59d1a 100%);
+      color:#4a3000;
+      border:1px solid rgba(255,255,255,0.20);
+    }
+
+    .btnSuccess{
+      background:linear-gradient(180deg, #42cf7d 0%, #2fb86b 55%, #1e7f48 100%);
+      color:#f7fff9;
+      border:1px solid rgba(255,255,255,0.16);
+    }
+
+    .btnGhost{
+      background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.18));
+      color:#ffffff;
+      border:1px solid rgba(255,255,255,0.26);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .btnSoft{
+      background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(238,245,252,0.94));
+      color:var(--darkText);
+      border:1px solid rgba(255,255,255,0.76);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .settingSelect{
+      appearance:none;
+      -webkit-appearance:none;
+      border:2px solid rgba(255,255,255,0.28);
+      border-radius:14px;
+      padding:11px 14px;
+      font-weight:900;
+      font-size:.95rem;
+      color:var(--darkText);
+      background:linear-gradient(180deg, rgba(255,255,255,0.97), rgba(240,246,252,0.94));
+      box-shadow:var(--shadowSoft);
+      text-align:center;
+      min-width:170px;
+      max-width:100%;
+      outline:none;
+    }
+
+    .settingsRow{
+      width:100%;
+      max-width:760px;
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:4px auto 10px auto;
+    }
+
+    .settingWrap{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+    }
+
+    .settingLabel{
+      font-size:.84rem;
+      font-weight:900;
+      color:#f5fbff;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
+    }
+
+    #introOverlay,
+    #foreheadOverlay,
+    #winOverlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(10,37,85,0.48);
+      z-index:9999;
+      padding:
+        calc(18px + env(safe-area-inset-top))
+        calc(18px + env(safe-area-inset-right))
+        calc(18px + env(safe-area-inset-bottom))
+        calc(18px + env(safe-area-inset-left));
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    #introOverlay.show,
+    #foreheadOverlay.show,
+    #winOverlay.show{
+      display:flex;
+    }
+
+    .overlayCard{
+      width:100%;
+      max-width:540px;
+      border-radius:30px;
+      border:1px solid rgba(255,255,255,0.24);
+      background:linear-gradient(180deg, rgba(29,95,196,0.90), rgba(11,49,112,0.93));
+      padding:22px 18px 18px;
+      box-shadow:
+        0 24px 60px rgba(8,31,74,0.28),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+      color:var(--text);
+      max-height:min(92dvh,92vh);
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .winnerBurst{
+      animation:winnerPop 800ms ease;
+    }
+
+    @keyframes winnerPop{
+      0%{ transform:scale(.92); opacity:.5; }
+      60%{ transform:scale(1.03); opacity:1; }
+      100%{ transform:scale(1); }
+    }
+
+    .overlayTitle{
+      font-size:2rem;
+      font-weight:900;
+      margin-bottom:6px;
+      letter-spacing:.02em;
+      color:#ffffff;
+    }
+
+    .overlaySub{
+      font-size:1.02rem;
+      font-weight:800;
+      opacity:.98;
+      margin-bottom:12px;
+      line-height:1.4;
+      color:var(--textSoft);
+    }
+
+    #introLogo{
+      width:min(220px,76vw);
+      max-width:76vw;
+      max-height:22vh;
+      height:auto;
+      object-fit:contain;
+      margin:0 auto 14px auto;
+      display:block;
+      border-radius:22px;
+      filter:
+        drop-shadow(0 0 18px rgba(255,255,255,0.20))
+        drop-shadow(0 0 32px rgba(255,211,109,0.14));
+    }
+
+    #introInstructions{
+      text-align:left;
+      font-size:.89rem;
+      line-height:1.58;
+      font-weight:800;
+      color:var(--text);
+      opacity:.98;
+      margin:0 0 14px 0;
+      white-space:pre-line;
+      overflow-wrap:anywhere;
+    }
+
+    #countNum{
+      font-size:4.2rem;
+      font-weight:900;
+      line-height:1;
+      margin:10px 0;
+      color:#ffe7a8;
+      text-shadow:0 0 18px rgba(255,231,168,0.22);
+      animation:countPulse 850ms ease infinite;
+    }
+
+    @keyframes countPulse{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.08); }
+    }
+
+    #countHint{
+      font-size:.98rem;
+      font-weight:800;
+      opacity:.96;
+      color:var(--textSoft);
+    }
+
+    #header{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      margin:10px 0 8px 0;
+      width:100%;
+    }
+
+    #logoImage{
+      width:min(235px,84vw);
+      height:auto;
+      max-width:84vw;
+      max-height:21vh;
+      border-radius:24px;
+      object-fit:contain;
+      background:transparent;
+      filter:
+        drop-shadow(0 0 22px rgba(255,255,255,0.22))
+        drop-shadow(0 0 34px rgba(255,211,109,0.16));
+    }
+
+    @media (min-width:768px){
+      #logoImage{ width:min(285px,30vw); }
+    }
+
+    #mainContent{
+      width:min(100%,1100px);
+      max-width:1100px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      flex:1;
+    }
+
+    #mainContent > *{
+      width:100%;
+    }
+
+    #categoryTitle{
+      font-weight:900;
+      letter-spacing:.04em;
+      font-size:1.06rem;
+      margin:12px 0 10px 0;
+      color:#f7fbff;
+      text-transform:uppercase;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
+    }
+
+    #categoryGrid{
+      width:100%;
+      max-width:1000px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:clamp(10px,2vw,20px);
+      margin:14px auto 22px auto;
+      padding:0;
+    }
+
+    .categoryCard{
+      position:relative;
+      border:none;
+      border-radius:22px;
+      overflow:hidden;
+      cursor:pointer;
+      padding:0;
+      min-height:clamp(110px,20vw,170px);
+      aspect-ratio:1 / 1;
+      background:linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.12));
+      outline:2px solid rgba(255,255,255,0.18);
+      transition:transform .15s, box-shadow .15s, outline-color .15s, filter .15s;
+      text-align:left;
+      box-shadow:
+        0 12px 30px rgba(9,35,84,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.16);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .categoryCard:hover{
+      transform:translateY(-1px) scale(1.01);
+      box-shadow:0 18px 38px rgba(9,35,84,0.22);
+      outline-color:rgba(255,211,109,0.65);
+      filter:brightness(1.02);
+    }
+
+    .categoryCard.tapPop{
+      animation:tapPop 220ms ease;
+    }
+
+    @keyframes tapPop{
+      0%{ transform:scale(1); }
+      50%{ transform:scale(.96); }
+      100%{ transform:scale(1.02); }
+    }
+
+    .categoryCard.selected{
+      outline:3px solid rgba(255,211,109,1);
+      box-shadow:
+        0 0 0 1px rgba(255,211,109,0.34),
+        0 18px 44px rgba(9,35,84,0.24);
+      transform:translateY(-1px) scale(1.01);
+    }
+
+    .categoryCard::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(135deg, rgba(255,255,255,0.18), transparent 38%, transparent 62%, rgba(255,255,255,0.08));
+      opacity:.9;
+    }
+
+    .categoryImg{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:rgba(17,62,130,0.10);
+    }
+
+    .categoryFallbackLabel{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:1.05rem;
+      padding:14px;
+      background:rgba(24,79,142,0.92);
+      color:#edf4fc;
+      opacity:0;
+      text-align:center;
+      overflow-wrap:anywhere;
+    }
+
+    .categoryCard.noImg .categoryFallbackLabel{ opacity:1; }
+    .categoryCard.noImg .categoryImg{ display:none; }
+
+    @media (min-width:768px){
+      #categoryGrid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:clamp(16px,2vw,28px);
+      }
+      .categoryCard{ min-height:clamp(150px,16vw,220px); }
+    }
+
+    #teamNamesRow{
+      width:100%;
+      max-width:900px;
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin:8px auto 12px auto;
+      padding:0;
+    }
+
+    .teamNameInput{
+      flex:1 1 220px;
+      width:min(100%,260px);
+      max-width:260px;
+      min-width:160px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:2px solid rgba(255,255,255,0.34);
+      background:linear-gradient(180deg, rgba(255,255,255,0.97), rgba(241,246,252,0.94));
+      color:#123456;
+      outline:none;
+      font-weight:900;
+      font-size:clamp(.95rem,2.5vw,1rem);
+      text-align:center;
+      box-shadow:
+        0 10px 22px rgba(9,35,84,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.80);
+    }
+
+    .teamNameInput::placeholder{
+      color:rgba(18,52,86,0.54);
+    }
+
+    .teamNameInput.hidden{ display:none; }
+
+    #turnIndicator{
+      font-weight:900;
+      margin:8px 0 0 0;
+      color:#ffffff;
+      overflow-wrap:anywhere;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
+      font-size:1.04rem;
+    }
+
+    #scoreboard{
+      display:flex;
+      gap:12px;
+      flex-wrap:nowrap;
+      background:linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.20));
+      border-radius:22px;
+      padding:14px 16px;
+      margin:12px auto 10px auto;
+      border:2px solid rgba(255,255,255,0.34);
+      width:100%;
+      max-width:660px;
+      justify-content:space-between;
+      box-shadow:
+        0 18px 40px rgba(9,35,84,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.30);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    .team{
+      text-align:center;
+      font-size:clamp(.92rem,2.5vw,1rem);
+      width:50%;
+      color:#ffffff;
+      min-width:0;
+      transition:transform .16s, box-shadow .16s, background .16s;
+      border-radius:16px;
+      padding:10px 8px;
+      background:rgba(7,35,86,0.18);
+    }
+
+    .teamNameLabel{
+      display:block;
+      font-size:clamp(1rem,3vw,1.08rem);
+      font-weight:900;
+      line-height:1.15;
+      margin-bottom:4px;
+      cursor:pointer;
+      color:#ffffff;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+    }
+
+    .active{
+      border-bottom:4px solid rgba(255,211,109,1);
+      padding-bottom:6px;
+      box-shadow:
+        0 0 0 1px rgba(255,211,109,0.24),
+        0 0 22px rgba(255,211,109,0.24);
+      background:rgba(255,255,255,0.14);
+      transform:translateY(-1px);
+    }
+
+    .scorePop{
+      animation:scorePop 300ms ease;
+    }
+
+    @keyframes scorePop{
+      0%{ transform:scale(1); }
+      45%{ transform:scale(1.14); }
+      100%{ transform:scale(1); }
+    }
+
+    #timer{
+      font-size:1.14rem;
+      font-weight:900;
+      margin:12px 0 10px 0;
+      color:#0d2d56;
+      background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(240,246,252,0.95));
+      border:1px solid rgba(255,255,255,0.50);
+      padding:10px 16px;
+      border-radius:16px;
+      display:inline-block;
+      width:auto;
+      max-width:100%;
+      box-shadow:0 12px 28px rgba(9,35,84,0.16);
+      transition:transform .16s ease, background .16s ease, color .16s ease;
+    }
+
+    #roundStage{
+      width:100%;
+      max-width:100%;
+      min-height:170px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:14px auto;
+      position:relative;
+    }
+
+    #startPromptBtn{
+      display:none;
+      border:none;
+      border-radius:30px;
+      width:min(100%,720px);
+      min-height:164px;
+      padding:24px 28px;
+      background:linear-gradient(180deg,#ff6d84 0%, #e5485f 54%, #b51f36 100%);
+      color:#fff9fb;
+      font-size:clamp(1.95rem,5vw,3.2rem);
+      font-weight:900;
+      letter-spacing:.05em;
+      cursor:pointer;
+      box-shadow:
+        0 24px 52px rgba(104,22,42,0.30),
+        0 0 24px rgba(255,122,144,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.20);
+      text-shadow:0 1px 2px rgba(0,0,0,0.24);
+      border:1px solid rgba(255,255,255,0.14);
+      animation:startPulse 1700ms ease-in-out infinite;
+    }
+
+    @keyframes startPulse{
+      0%,100%{
+        transform:scale(1);
+        box-shadow:
+          0 24px 52px rgba(104,22,42,0.30),
+          0 0 24px rgba(255,122,144,0.18),
+          inset 0 1px 0 rgba(255,255,255,0.20);
+      }
+      50%{
+        transform:scale(1.018);
+        box-shadow:
+          0 28px 60px rgba(104,22,42,0.34),
+          0 0 28px rgba(255,122,144,0.24),
+          inset 0 1px 0 rgba(255,255,255,0.24);
+      }
+    }
+
+    #startPromptBtn.show{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    #startPromptBtn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:
+        0 16px 32px rgba(68,10,19,0.16),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+      animation:none;
+    }
+
+    #word{
+      display:flex;
+      font-size:clamp(2rem,5.5vw,2.95rem);
+      font-weight:900;
+      padding:22px 24px;
+      border-radius:24px;
+      color:#fcfff7;
+      border:2px solid rgba(255,255,255,0.14);
+      background:linear-gradient(180deg, var(--wordTop) 0%, var(--wordBottom) 100%);
+      max-width:100%;
+      width:100%;
+      word-wrap:break-word;
+      overflow-wrap:anywhere;
+      line-height:1.12;
+      box-shadow:0 18px 40px rgba(9,35,84,0.20);
+      text-shadow:0 1px 1px rgba(0,0,0,0.25);
+      min-height:150px;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      margin:0;
+      opacity:1;
+      transform:scale(1);
+      transition:opacity 180ms ease, transform 180ms ease;
+    }
+
+    #word.wordIn{
+      animation:wordIn 220ms ease;
+    }
+
+    @keyframes wordIn{
+      0%{ opacity:0; transform:scale(.96); }
+      100%{ opacity:1; transform:scale(1); }
+    }
+
+    #actionFlash{
+      display:none;
+      width:100%;
+      max-width:100%;
+      min-height:150px;
+      padding:18px 22px;
+      border-radius:24px;
+      font-size:clamp(2.2rem,7vw,5rem);
+      font-weight:900;
+      line-height:1.08;
+      text-align:center;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 18px 40px rgba(9,35,84,0.20);
+      text-shadow:0 1px 1px rgba(0,0,0,0.25);
+      border:2px solid rgba(255,255,255,0.12);
+      margin:0;
+      overflow-wrap:anywhere;
+      animation:flashIn 220ms ease;
+    }
+
+    @keyframes flashIn{
+      0%{ opacity:0; transform:scale(.9); }
+      100%{ opacity:1; transform:scale(1); }
+    }
+
+    #actionFlash.show{
+      display:flex;
+    }
+
+    #actionFlash.correct{
+      color:#ffffff;
+      background:linear-gradient(180deg, #4db8ff 0%, #1e88e5 55%, #1565c0 100%);
+      box-shadow:
+        0 18px 40px rgba(9,35,84,0.20),
+        0 0 24px rgba(77,184,255,0.28);
+    }
+
+    #actionFlash.pass{
+      color:#fff7f8;
+      background:linear-gradient(180deg, #ff7488 0%, #c62243 100%);
+      box-shadow:
+        0 18px 40px rgba(9,35,84,0.20),
+        0 0 24px rgba(255,116,136,0.22);
+    }
+
+    #status{
+      font-size:1rem;
+      font-weight:900;
+      min-height:1.3em;
+      margin-bottom:10px;
+      color:#ffffff;
+      overflow-wrap:anywhere;
+      text-align:center;
+      text-shadow:0 1px 0 rgba(0,0,0,0.08);
+    }
+
+    #buttonsRow{
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      width:100%;
+      max-width:900px;
+      gap:8px;
+      padding:0;
+      margin:10px auto 20px auto; /* Reduced margin */
+    }
+
+    #recordPreviewWrap{
+      width:100%;
+      max-width:520px;
+      margin:14px auto 0 auto;
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+
+    #recordPreview{
+      width:100%;
+      max-width:420px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.35);
+      border:2px solid rgba(255,255,255,0.18);
+      box-shadow:0 14px 28px rgba(9,35,84,0.20);
+      object-fit:contain;
+      max-height:60dvh;
+    }
+
+    #recordPreviewNote{
+      font-size:.92rem;
+      font-weight:800;
+      color:#ffffff;
+      opacity:.98;
+      overflow-wrap:anywhere;
+    }
+
+    #confettiLayer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:10001;
+    }
+
+    .confetti-piece{
+      position:absolute;
+      top:-20px;
+      width:10px;
+      height:18px;
+      border-radius:3px;
+      opacity:.95;
+      animation:confettiFall linear forwards;
+      will-change:transform, opacity;
+    }
+
+    @keyframes confettiFall{
+      0%{
+        transform:translate3d(0,0,0) rotate(0deg);
+        opacity:1;
+      }
+      100%{
+        transform:translate3d(var(--driftX), 110vh, 0) rotate(var(--spin));
+        opacity:0.95;
+      }
+    }
+
+    body.roundFocus{
+      padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
+      overflow:hidden;
+    }
+
+    body.roundFocus #header,
+    body.roundFocus #categoryTitle,
+    body.roundFocus #categoryGrid,
+    body.roundFocus #teamNamesRow,
+    body.roundFocus #turnIndicator,
+    body.roundFocus #scoreboard,
+    body.roundFocus #timer,
+    body.roundFocus #status,
+    body.roundFocus #buttonsRow,
+    body.roundFocus #recordPreviewWrap,
+    body.roundFocus .settingsRow{
+      display:none !important;
+    }
+
+    body.roundFocus #mainContent{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      height:100dvh;
+      max-width:none;
+      margin:0;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      z-index:5;
+    }
+
+    body.roundFocus #roundStage{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      min-height:0;
+      margin:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:auto;
+      padding:
+        calc(12px + env(safe-area-inset-top))
+        calc(12px + env(safe-area-inset-right))
+        calc(12px + env(safe-area-inset-bottom))
+        calc(12px + env(safe-area-inset-left));
+    }
+
+    body.roundFocus #word,
+    body.roundFocus #actionFlash{
+      width:min(100%,1100px);
+      min-height:100%;
+      max-width:1100px !important;
+      margin:auto !important;
+      border-radius:18px !important;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:clamp(18px,4vw,36px);
+      font-size:clamp(2rem,7vw,7rem);
+      line-height:1.02;
+      box-shadow:none !important;
+    }
+
+    body.roundFocus #word{
+      word-break:break-word;
+      overflow-wrap:anywhere;
+    }
+
+    body.roundFocus #startPromptBtn{
+      display:none !important;
+    }
+
+    body.roundFocus #actionFlash{
+      display:none;
+    }
+
+    body.roundFocus #actionFlash.show{
+      display:flex;
+    }
+
+    @media (max-width:420px){
+      #categoryTitle{
+        font-size:.96rem;
+        margin:8px 0;
+      }
+
+      #turnIndicator,
+      #status{
+        font-size:.93rem;
+      }
+
+      #timer{
+        font-size:1rem;
+        padding:8px 12px;
+      }
+
+      #word{
+        font-size:clamp(1.8rem,8vw,2.5rem);
+        min-height:125px;
+        padding:16px 16px;
+      }
+
+      #startPromptBtn{
+        min-height:124px;
+        font-size:clamp(1.6rem,7vw,2.2rem);
+        padding:16px 18px;
+      }
+
+      .overlayCard{
+        padding:18px 14px 16px 14px;
+      }
+
+      .overlayTitle{
+        font-size:1.5rem;
+      }
+
+      .overlaySub{
+        font-size:.95rem;
+      }
+
+      #introInstructions{
+        font-size:.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="noSelect">
+  <div id="confettiLayer" aria-hidden="true"></div>
+
+  <div id="introOverlay" class="show" aria-hidden="false">
+    <div class="overlayCard">
+      <img id="introLogo" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
+      <div id="introInstructions">1. Pick a Category &amp; Enter Team name (Optional).
+2. Tap "Tap to Start" &amp; Put phone on head to start.
+3. Your team will shout/act out clues for you guess the word.
+4. Tilt Up to Pass. Tilt Down for Correct. Have fun!
+Repost &amp; tag us @UrbanCharadesGame.</div>
+      <button id="enterAppBtn" class="gameBtn btnSoft" style="width:100%;min-width:0;">Enter Game</button>
+    </div>
+  </div>
+
+  <div id="header">
+    <img id="logoImage" src="urban-logo.png" alt="Urban Charades logo" onerror="this.style.display='none'">
+  </div>
+
+  <audio id="soundCorrect" src="audio/correct.mp3" preload="auto"></audio>
+  <audio id="soundSkip" src="audio/skip.mp3" preload="auto"></audio>
+  <audio id="soundTimeUp" src="audio/timeup.mp3" preload="auto"></audio>
+  <audio id="soundStart" src="audio/start-round.mp3" preload="auto"></audio>
+  <audio id="soundTap" src="audio/tap.mp3" preload="auto"></audio>
+
+  <div id="foreheadOverlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTitle">📱 PLACE ON FOREHEAD</div>
+      <div id="overlaySub" class="overlaySub">Pass the phone to the player and place it on their forehead in any orientation.</div>
+      <div id="countNum">READY</div>
+      <div id="countHint">Tilt UP to pass • Tilt DOWN for correct.</div>
+    </div>
+  </div>
+
+  <div id="winOverlay" aria-hidden="true">
+    <div class="overlayCard winnerBurst" id="winnerCard">
+      <div class="overlayTitle">🏆 WINNER</div>
+      <div id="winTeam" class="overlaySub"></div>
+
+      <div style="margin:12px 0;font-weight:900;color:var(--text);">
+        <span id="finalScoreA"></span><br/>
+        <span id="finalScoreB"></span>
+      </div>
+
+
+      <button id="playAgainBtn" class="gameBtn btnPrimary" style="width:100%;min-width:0;">Play Again</button>
+      <button id="newGameBtn" class="gameBtn btnAccent" style="width:100%;min-width:0; margin-top:8px;">New Game (Change Category)</button>
+    </div>
+  </div>
+
+  <div id="mainContent">
+    <div id="categoryTitle">Pick a Category</div>
+    <div id="categoryGrid"></div>
+
+    <div id="teamNamesRow">
+      <input id="teamANameInput" class="teamNameInput" maxlength="18" placeholder="Team A name" />
+      <input id="teamBNameInput" class="teamNameInput" maxlength="18" placeholder="Team B name" />
+    </div>
+
+    <div class="settingsRow">
+      <div class="settingWrap">
+        <label class="settingLabel" for="roundLengthSelect">Round Time</label>
+        <select id="roundLengthSelect" class="settingSelect">
+          <option value="30">30 sec</option>
+          <option value="60" selected>60 sec</option>
+          <option value="90">90 sec</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="turnIndicator">Team A’s Turn</div>
+
+    <div id="scoreboard">
+      <div id="teamA" class="team active">
+        <span id="teamAName" class="teamNameLabel">Team A</span>
+        Score: <span id="scoreA">0</span>
+      </div>
+      <div id="teamB" class="team">
+        <span id="teamBName" class="teamNameLabel">Team B</span>
+        Score: <span id="scoreB">0</span>
+      </div>
+    </div>
+
+    <div id="timer">Time: 60</div>
+
+    <div id="roundStage">
+      <button id="startPromptBtn" type="button">TAP TO START</button>
+      <div id="word">Choose a category to get started!</div>
+      <div id="actionFlash" aria-hidden="true">CORRECT</div>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="recordPreviewWrap">
+      <video id="recordPreview" controls playsinline preload="metadata"></video>
+      <div id="recordPreviewNote">If Save does not work on Android, use Share Last Recording.</div>
+    </div>
+
+    <div id="buttonsRow">
+      <button id="recordToggleBtn" class="gameBtn btnSuccess">Recording: On</button>
+      <a id="downloadLink" class="gameBtn btnSuccess" href="#" style="display:none;">Save Last Recording</a>
+      <button id="shareRecordingBtn" class="gameBtn btnGhost" style="display:none;min-width:220px;">Share Last Recording</button>
+    </div>
+  </div>
+
+  <script>
+    const Cap = window.Capacitor || {
+      getPlatform: () => {
+        const ua = navigator.userAgent || "";
+        if (/android/i.test(ua)) return "android";
+        if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
+        return "web";
+      },
+      convertFileSrc: (v) => v,
+      isNativePlatform: () => false,
+      Plugins: {}
+    };
+
+    const NativeRecorder = {
+      async startFrontRecording(){
+        // Check for common Capacitor plugin names for video recording
+        const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
+        if (plugin?.startRecording) {
+          return plugin.startRecording({
+            position: "front",
+            quality: "medium"
+          });
+        }
+        throw new Error("VideoRecorder plugin not found in Capacitor Plugins.");
+      },
+
+      async stopRecording(){
+        const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
+        if (plugin?.stopRecording) {
+          return plugin.stopRecording();
+        }
+        throw new Error("VideoRecorder plugin not found in Capacitor Plugins.");
+      }
+    };
+
+    const ScreenOrientationPlugin =
+      Cap?.Plugins?.ScreenOrientation ||
+      window.ScreenOrientation ||
+      null;
+
+    const recordToggleBtn = document.getElementById("recordToggleBtn");
+    const downloadLink = document.getElementById("downloadLink");
+    const shareRecordingBtn = document.getElementById("shareRecordingBtn");
+    const startPromptBtn = document.getElementById("startPromptBtn");
+    const roundLengthSelect = document.getElementById("roundLengthSelect");
+
+    const wordEl = document.getElementById("word");
+    const timerEl = document.getElementById("timer");
+    const statusEl = document.getElementById("status");
+    const turnIndicator = document.getElementById("turnIndicator");
+
+    const scoreAEl = document.getElementById("scoreA");
+    const scoreBEl = document.getElementById("scoreB");
+
+    const teamABox = document.getElementById("teamA");
+    const teamBBox = document.getElementById("teamB");
+
+    const teamANameInput = document.getElementById("teamANameInput");
+    const teamBNameInput = document.getElementById("teamBNameInput");
+    const teamANameLabel = document.getElementById("teamAName");
+    const teamBNameLabel = document.getElementById("teamBName");
+
+    const categoryGrid = document.getElementById("categoryGrid");
+
+    const introOverlay = document.getElementById("introOverlay");
+    const enterAppBtn = document.getElementById("enterAppBtn");
+
+    const foreheadOverlay = document.getElementById("foreheadOverlay");
+    const overlaySub = document.getElementById("overlaySub");
+    const countNum = document.getElementById("countNum");
+
+    const winOverlay = document.getElementById("winOverlay");
+    const winnerCard = document.getElementById("winnerCard");
+    const winTeamEl = document.getElementById("winTeam");
+    const finalScoreA = document.getElementById("finalScoreA");
+    const finalScoreB = document.getElementById("finalScoreB");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    const newGameBtn = document.getElementById("newGameBtn");
+
+    const winDownloadBtn = null;
+    const winShareBtn = null;
+    const winRecordPreview = null;
+    const winVideoWrap = null;
+
+    const soundCorrect = document.getElementById("soundCorrect");
+    const soundSkip = document.getElementById("soundSkip");
+    const soundTimeUp = document.getElementById("soundTimeUp");
+    const soundStart = document.getElementById("soundStart");
+    const soundTap = document.getElementById("soundTap");
+
+    const actionFlash = document.getElementById("actionFlash");
+    const recordPreviewWrap = document.getElementById("recordPreviewWrap");
+    const recordPreview = document.getElementById("recordPreview");
+    const confettiLayer = document.getElementById("confettiLayer");
+
+    const CATEGORY_DEFS = [
+      { key: "Urban Movies", img: "img/urban-movies.png" },
+      { key: "Hip Hop / R&B", img: "img/hip-hop-rnb.png" },
+      { key: "Famous Black People", img: "img/famous-black-people.png" },
+      { key: "Hood Creatures", img: "img/hood-creatures.png" },
+      { key: "Act it out", img: "img/act-it-out.png" },
+      { key: "Hood Slang/Quotes", img: "img/hood-slang-quotes.png" }
+    ];
+
+    const wordsData = {
+      "Urban Movies": [
+        "Friday","Menace II Society","Boyz n the Hood","Juice","Paid in Full","Training Day","New Jack City","Set It Off","Baby Boy","Poetic Justice",
+        "Higher Learning","Love & Basketball","Belly","Above the Rim","Dead Presidents","The Wood","Brown Sugar","The Best Man","The Wash","Barbershop",
+        "Beauty Shop","ATL","Stomp the Yard","You Got Served","Drumline","Hustle & Flow","Soul Food","Don't Be a Menace","I'm Gonna Git You Sucka","Harlem Nights",
+        "Coming to America","Do the Right Thing","She's Gotta Have It","Malcolm X","Ray","What's Love Got to Do with It","Straight Outta Compton","All Eyez on Me",
+        "Notorious","Get Rich or Die Tryin","Dope","Moonlight","Fruitvale Station","Creed","Black Panther","The Hate U Give","Queen & Slim",
+        "If Beale Street Could Talk","Blindspotting","Sorry to Bother You","Southside with You","Crooklyn","The Five Heartbeats","Dreamgirls","Cadillac Records",
+        "Idlewild","Sparkle","Biker Boyz","Blue Hill Avenue","King of New York","Deep Cover","Sugar Hill","Jason's Lyric","Eve's Bayou","Waiting to Exhale",
+        "How Stella Got Her Groove Back","Booty Call","How to Be a Player","The Players Club","BAPS","Life","House Party","Class Act","The Last Dragon",
+        "Strictly Business","Boomerang","Vampire in Brooklyn","A Thin Line Between Love and Hate","Woo","The Brothers","Two Can Play That Game","Deliver Us from Eva",
+        "Think Like a Man","About Last Night","Girls Trip","The Photograph","Us","Get Out","Candyman","Tales from the Hood","Bones","Paper Soldiers",
+        "State Property","Killa Season","Shottas","Cooley High","Rush Hour","One Night in Miami","Judas and the Black Messiah","King Richard","The Woman King",
+        "They Cloned Tyrone","Spider-Man: Into the Spider-Verse","The Harder They Fall","You People","The Book of Clarence","Candy Cane Lane","A Thousand and One",
+        "Rye Lane","The Blackening","Origin","Respect","Till","Passing","Rustin","The Inspection","Chevalier","Fatherhood","Beast","Emancipation","Little",
+        "Bad Hair","Jingle Jangle","Beats","See You Yesterday","Bruised","Really Love","Sylvie's Love","Uncle Drew","Miss Juneteenth","On the Come Up",
+        "A Journal for Jordan","Praise This","The Burial","American Fiction","Dolemite Is My Name","Harriet","Nope","The Last Black Man in San Francisco",
+        "Sinners","Big Momma's House","The Temptations","Django Unchained","Love Jones","Hoodlum","The Great Debaters","The Preacher's Wife","Space Jam","White Men Can't Jump"
+      ],
+      "Hip Hop / R&B": [
+        "Tupac Shakur","Notorious B.I.G.","Jay-Z","Nas","Snoop Dogg","Dr. Dre","Ice Cube","Kendrick Lamar","J. Cole","Drake","Kanye West","Lil Wayne",
+        "Andre 3000","Eminem","Rakim","Scarface","DMX","50 Cent","Busta Rhymes","Method Man","Redman","Ghostface Killah","Raekwon","Common","Mos Def","Talib Kweli",
+        "Lauryn Hill","Missy Elliott","Queen Latifah","Lil Kim","Foxy Brown","Nicki Minaj","Cardi B","Megan Thee Stallion","Eve","Remy Ma","Mary J. Blige",
+        "Aaliyah","Beyoncé","Rihanna","Usher","Chris Brown","Trey Songz","SZA","Summer Walker","Jhene Aiko","H.E.R.","Alicia Keys","Erykah Badu","Jill Scott",
+        "D'Angelo","Maxwell","Frank Ocean","The Weeknd","Brent Faiyaz","Giveon","Lucky Daye","SiR","T-Pain","Future","Young Thug","Travis Scott","21 Savage",
+        "Lil Baby","Gunna","Migos","Gucci Mane","Rick Ross","Meek Mill","Nipsey Hussle","Outkast","Wu-Tang Clan","Mobb Deep","A Tribe Called Quest",
+        "Public Enemy","N.W.A","Run-D.M.C.","Salt-N-Pepa","TLC","Destiny's Child","SWV","Xscape","New Edition","Boyz II Men","Jodeci","Dru Hill","112","Jagged Edge",
+        "The Roots","LL Cool J","Ludacris","T.I.","Jeezy","Nelly","Fabolous","Jadakiss","Cam'ron","Wale","Big Sean","Kid Cudi","Tyler, The Creator","A$AP Rocky",
+        "A$AP Ferg","Chance the Rapper","Joey Bada$$","Vince Staples","Doja Cat","GloRilla","Sexyy Red","Latto","Flo Milli","Coi Leray","Lola Brooke","Muni Long",
+        "Coco Jones","Victoria Monét","Janelle Monáe","Miguel","Kehlani","Tems","Ayra Starr","Tyla","Ella Mai","Smino","Saba","Cordae","Tobe Nwigwe","BLXST",
+        "Leon Thomas","Tinashe","Normani","PARTYNEXTDOOR","Bryson Tiller","Monica","Brandy","Keyshia Cole","Ashanti","Ari Lennox","Ty Dolla $ign"
+      ],
+      "Famous Black People": [
+        "Martin Luther King Jr.","Malcolm X","Rosa Parks","Barack Obama","Michelle Obama","Nelson Mandela","Harriet Tubman","Frederick Douglass","Maya Angelou","James Baldwin",
+        "Oprah Winfrey","Muhammad Ali","Michael Jordan","Kobe Bryant","LeBron James","Serena Williams","Venus Williams","Tiger Woods","Simone Biles","Jackie Robinson",
+        "Jesse Owens","Arthur Ashe","Hank Aaron","Will Smith","Denzel Washington","Samuel L. Jackson","Morgan Freeman","Viola Davis","Angela Bassett","Halle Berry",
+        "Eddie Murphy","Richard Pryor","Dave Chappelle","Kevin Hart","Whoopi Goldberg","Sidney Poitier","Chadwick Boseman","Michael B. Jordan","Taraji P. Henson","Issa Rae",
+        "Tyler Perry","Spike Lee","Jordan Peele","Ava DuVernay","Quincy Jones","Berry Gordy","Madame C.J. Walker","George Washington Carver","Thurgood Marshall","Shirley Chisholm",
+        "John Lewis","Stacey Abrams","Kamala Harris","Coretta Scott King","Sojourner Truth","Booker T. Washington","W.E.B. Du Bois","Marcus Garvey","Katherine Johnson",
+        "Dorothy Vaughan","Mary Jackson","Neil deGrasse Tyson","Toni Morrison","Langston Hughes","Zora Neale Hurston","Alice Walker","August Wilson","Lorraine Hansberry",
+        "Gordon Parks","Basquiat","Kehinde Wiley","Pharrell Williams","Virgil Abloh","Daymond John","Magic Johnson","Shaquille O'Neal","Stephen Curry","Floyd Mayweather",
+        "Mike Tyson","Prince","Michael Jackson","Stevie Wonder","Whitney Houston","Diana Ross","Tina Turner","Bob Marley","Lizzo","Aretha Franklin","Nina Simone","Marvin Gaye",
+        "Billie Holiday","Ella Fitzgerald","James Brown","Ray Charles","Louis Armstrong","Duke Ellington","Nat King Cole","B.B. King","Hattie McDaniel","Dorothy Dandridge",
+        "Cicely Tyson","Regina King","Octavia Butler","bell hooks","Mae Jemison","Garrett Morgan","Elijah McCoy","Benjamin Banneker","Charles Drew","Percy Julian","Guion Bluford",
+        "Ida B. Wells","Ruby Bridges","Fannie Lou Hamer","Bayard Rustin","Medgar Evers","Angela Davis","Huey P. Newton","Stokely Carmichael","Bessie Coleman","Colin Powell",
+        "Condoleezza Rice","James Earl Jones","Deion Sanders","Barry Sanders","Simone Manuel","Allyson Felix","Gabby Douglas","Iman","Naomi Campbell","Tyra Banks","Donald Glover",
+        "John Boyega","Regina Hall","Nia Long","Kerry Washington","Zendaya"
+      ],
+      "Hood Creatures": [
+        "Pigeon","Pitbull","Rat","Cat","Cockroach","Raccoon","Seagull","Squirrel","Possum","Poodle","Dog","Mosquito","Housefly","Mice","Shepherd","Chihuahua","Bulldog",
+        "Kitten","Raven","Crow","Sparrow","Mutt","Spider","Ant","Moth","Rooster","Bat","Frog","Cricket","Grasshopper","Bedbug","Termite","Silverfish","Waterbug","Wasp",
+        "Cicada","Bug","Skunk","Goose","Duck","Turtle","Snake","Bullmastiff","Rottweiler","Doberman","Boxer","Yorkie","Maltese","Frenchie","Beagle","Bloodhound","Coyote",
+        "Deer","Owl","Woodpecker","Gopher","Mole","Groundhog","Flea","Tick","Earwig","Centipede","Millipede","Snail","Slug","Earthworm","Dragonfly","Firefly","Ladybug",
+        "Hornet","Honeybee","Bumblebee","Fly","Gnat","Leech","Tadpole","Crayfish","Carp","Catfish","Duckling","Stork","Heron","Falcon","Hawk","Vulture","Buzzard","Husky",
+        "Great Dane","Labrador","Pug","Corgi","Shih Tzu","Dachshund","Pomeranian","Mastiff","Cane Corso","Terrier","Pointer","Spaniel","Retriever","Akita","Schnauzer",
+        "Greyhound","Whippet","Ferret","Hamster","Guinea pig","Parakeet","Canary","Robin","Cardinal","Blue Jay","Finch","Hummingbird","Mockingbird","Starling","Grackle",
+        "Blackbird","Chipmunk","Rabbit","Bunny","Fox","Salamander","Gecko","Iguana","Toad","Newt","Mantis","Beetle","Junebug","Caterpillar","Butterfly","Aphid","Weevil",
+        "Locust","Midge","Bobcat","Roly-poly","Pelican"
+      ],
+      "Act it out": [
+        "Play Spades","Make it rain","Shuffle cards","Deal cards","Slam dominoes","Twerk","Throw dice","Roll dice","Shake dice","Electric Slide","Barber","Check hairline",
+        "Spin chair","Fresh fade","Brush waves","Tie durag","Adjust durag","Put bonnet","Lay edges","Braid hair","Fix braids","Retwist locs","Pick afro","Beard lineup",
+        "Trim beard","Brush beard","Put lashes","Fix lashes","Apply lipgloss","Gloss poppin","Put hoop earrings","Fix necklace","Put chain on","Check fit","Lace sneakers",
+        "Tie Jordans","Wipe sneakers","Clean sneakers","Snap selfie","Take selfie","Group selfie","Photo pose","Open Instagram","Post story","Send DM","Like a pic",
+        "Open Snapchat","Send snap","Snap streak","Filter selfie","Scroll TikTok","Record TikTok","Set tripod","Ring light","Answer FaceTime","Video call","Hang up","Text back",
+        "Send emoji","Drop location","Turn music up","Turn music down","Bluetooth speaker","Pair Bluetooth","Air rap","Freestyle rap","Sing hook","Mic drop","Hype crowd",
+        "Dance battle","Two step","Cupid shuffle","Do the Dougie","Crank that","Stanky leg","Hit the Woah","Hit the Quan","Do Nae Nae","Pop lock","Body roll","Shoulder roll",
+        "Shoulder shrug","Finger snap","Side eye","Eye roll","Throw shade","Mean mug","High five","Fist bump","Dap handshake","Fist pump","Head nod","Slow clap","Cookout grill",
+        "Flip burgers","Season chicken","Stir greens","Mix Kool-Aid","Fix plate","Grab plate","Pass plate","Eat wings","Eat pizza","Pop popcorn","Crunch chips","Chew gum",
+        "Blow bubble","Sip tea","Drink water","Pour juice","Open soda","Crack soda","Wait for bus","Catch the bus","Swipe transit","Hail rideshare","Start car","Park car",
+        "Parallel park","Pump gas","Check gas","Unlock door","Lock door","Ring doorbell","Knock door","Peek window","Open mailbox","Check mail","Grab package","Sign receipt",
+        "Pay bill","Swipe card","Tap card","Count cash","Split bill","Charge phone","Plug charger","Low battery","Check notifications","Scan barcode","Bag groceries","Push cart","Carry bags",
+        "Hand wave","Peace sign","Thumbs up","Play drums","Beat box","DJ scratch","Play fight","Sing","Flex dance","Crowd wave","Barbecue","Phone flashlight","Mute phone","Argue",
+        "Catwalk","Post caption","Add hashtags","Check messages","Clear notifications","Hide and seek","Decline call","Play music","Mute","Change song","Volume up",
+        "Volume down","Share video","Send link","Copy link","Order takeout","Drive thru","Find parking","Moon walk","Window shop","Put on shoes","Return item","Receipt check",
+        "Self checkout","Fight","Basketball dribble","Shoot hoop","Layup shot","Crossover move","Break ankles","Fast break","Catch football","Throw football","Kick ball","Jump shot"
+      ],
+      "Hood Slang/Quotes": [
+        "Finna","Cap","No cap","Bet","Pull up","On god","Deadass","Aight","Facts","It's the ___","Periodt","Chile","Glow up","Bussin","Caught in 4k","Simp","Stan","Vibe check",
+        "Tea","Snatched","Lowkey","Highkey","Secure bag","Rent free","Say less","Guap","Bread","Clout","Drip","Ghosting","GOAT","Gucci","Keep it 100","Lit","Opp","Rizz","Salty",
+        "Shade","Shook","Slay","Squad","Sus","Woke","Yeet","I'm weak","Straight up","For real","Word is bond","My bad","Don't play","On my mama","Real rap","I'm hip","Pause",
+        "Brick","Mula","Paper","Cheddar","Scrilla","Benjamins","Trap","The plug","Finesse","Flex","Hype","Doing too much","Pressed","Bugging","Tripping","Wilding","It's giving",
+        "Valid","Big mad","Stay woke","No kizzy","Say that","Straight facts","Bet that","Ate that","Big vibes","Bossed up","Actin brand new","Outta pocket","Pipe down","Sit down",
+        "Talk your talk","Pop off","Hold me down","Say word","Word","On point","We outside","Outside","Big steppa","Main character","It's up","Heard you","Slide through","Run it",
+        "Run me that","Check the fit","What's tea","Whole mood","Ain't no way","Not too much","Clock it","Stand on business","On timing","Poppin","Too clean","Big energy",
+        "Low vibration","High vibration","For the streets","Stay dangerous","Keep that","Don't trip","You good","Tap in","Tapped in","Locked in","Get active","Cut up","Chill out",
+        "Go crazy","Too tough","Big pressure","No worries"
+      ]
+    };
+
+    let selectedCategory = "";
+    let wordPool = [];
+    let teamTurn = "A";
+    let teamAScore = 0;
+    let teamBScore = 0;
+
+    let roundSeconds = 60;
+    let timeLeft = 60;
+    let timerInterval = null;
+
+    let roundActive = false;
+    let matchOver = false;
+    let preRoundActive = false;
+    let waitingForForeheadPose = false;
+    let foreheadStableSince = 0;
+
+    let transitionLock = false;
+    let actionFlashTimer = null;
+    let countdownTimers = [];
+
+    let latestTiltValue = null;
+    let smoothedTiltValue = null;
+    let tiltBaseline = null;
+    let tiltArmed = true;
+    let lastTiltActionAt = 0;
+
+    let audioCtx = null;
+    let recordEnabled = true;
+
+    let recordStream = null;
+    let mediaRecorder = null;
+    let mediaChunks = [];
+    let lastRecordingUrl = "";
+    let lastRecordingBlob = null;
+    let lastRecordingMimeType = "video/webm";
+    let lastUploadedVideoUrl = "";
+    let lastSavedFileName = "";
+    let lastNativeFileUri = "";
+    let usingNativeRecording = false; // New flag to track recording source
+
+    const FOREHEAD_READY_MIN_MS = 650;
+    const TRANSITION_DELAY = 700;
+
+    let TILT_THRESHOLD = 18; // Slightly higher for better deliberate movement detection
+    let TILT_RESET = 8;
+    let TILT_COOLDOWN = 650; // Reduced cooldown for snappier feel
+
+    function getPlatformName(){
+      return Cap.getPlatform ? Cap.getPlatform() : "web";
+    }
+
+    function isNativeMobile(){
+      const p = getPlatformName();
+      return p === "ios" || p === "android";
+    }
+
+    function isIOS(){
+      return getPlatformName() === "ios";
+    }
+
+    function isAndroid(){
+      return getPlatformName() === "android";
+    }
+
+    function webRecordingSupported(){
+      return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+    }
+
+    async function lockGameLandscape(){
+      try {
+        if (ScreenOrientationPlugin?.lock) {
+          await ScreenOrientationPlugin.lock({ orientation: "landscape-primary" });
+        }
+      } catch(e){}
+    }
+
+    async function unlockGameOrientation(){
+      if(isNativeMobile()){
+        try{
+          const ScreenOrientation = Cap?.Plugins?.ScreenOrientation;
+          if(ScreenOrientation?.lock){
+            // Force back to portrait instead of just unlock
+            await ScreenOrientation.lock({ orientation: "portrait" });
+          }
+        }catch(e){ console.error(e); }
+      }
+    }
+
+    function applyTiltSettings(){
+      TILT_THRESHOLD = 16;
+      TILT_RESET = 7;
+      TILT_COOLDOWN = 850;
+    }
+
+    function ensureAudioContext(){
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        if(!audioCtx) audioCtx = new AC();
+        if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+        return audioCtx;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function safePlay(audio, fallbackFreq = 880, fallbackDuration = 140){
+      try{
+        audio.volume = 1;
+        audio.muted = false;
+        audio.currentTime = 0;
+        const p = audio.play();
+        if(p && typeof p.catch === "function"){
+          p.catch(() => beep(fallbackFreq, fallbackDuration));
+        }
+      }catch(e){
+        beep(fallbackFreq, fallbackDuration);
+      }
+    }
+
+    function beep(freq=880, duration=170){
+      try{
+        const ctx = ensureAudioContext();
+        if(!ctx) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.value = 0.0001;
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+        osc.start(now);
+        gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / 1000);
+        osc.stop(now + duration / 1000 + 0.02);
+      }catch(e){}
+    }
+
+    function playIntroChime(){
+      beep(523, 120);
+      setTimeout(()=>beep(659, 120), 100);
+      setTimeout(()=>beep(784, 140), 200);
+    }
+
+    function clearCountdownTimers(){
+      countdownTimers.forEach(t => clearTimeout(t));
+      countdownTimers = [];
+    }
+
+    function sanitizeTeamName(v){ return (v || "").trim().slice(0,18); }
+
+    function applyTeamNames(){
+      const a = sanitizeTeamName(teamANameInput.value) || "Team A";
+      const b = sanitizeTeamName(teamBNameInput.value) || "Team B";
+      teamANameLabel.textContent = a;
+      teamBNameLabel.textContent = b;
+      updateTurnUI();
+    }
+
+    function editTeam(team){
+      if(team === "A"){
+        teamANameInput.classList.remove("hidden");
+        teamANameInput.focus();
+        teamANameInput.select();
+      }else{
+        teamBNameInput.classList.remove("hidden");
+        teamBNameInput.focus();
+        teamBNameInput.select();
+      }
+    }
+
+    function updateScores(){
+      scoreAEl.textContent = teamAScore;
+      scoreBEl.textContent = teamBScore;
+    }
+
+    function currentTeamName(){
+      return teamTurn === "A" ? teamANameLabel.textContent : teamBNameLabel.textContent;
+    }
+
+    function updateTurnUI(){
+      turnIndicator.textContent = `${currentTeamName()}’s Turn`;
+      teamABox.classList.toggle("active", teamTurn === "A");
+      teamBBox.classList.toggle("active", teamTurn === "B");
+    }
+
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
+
+    function restockPool(){
+      wordPool = shuffle([...(wordsData[selectedCategory] || [])]);
+    }
+
+    function drawWord(){
+      if(!wordPool.length) restockPool();
+      return wordPool.pop() || "—";
+    }
+
+    function setFocusMode(on){
+      document.body.classList.toggle("roundFocus", !!on);
+    }
+
+    function updateStartPrompt(){
+      const introShowing = introOverlay.classList.contains("show");
+      const shouldShow =
+        !!selectedCategory &&
+        !roundActive &&
+        !matchOver &&
+        !preRoundActive &&
+        !introShowing;
+
+      startPromptBtn.classList.toggle("show", shouldShow);
+      startPromptBtn.disabled = !shouldShow;
+    }
+
+    function showWordCard(text){
+      wordEl.textContent = text;
+      wordEl.style.display = "flex";
+      wordEl.classList.remove("wordIn");
+      void wordEl.offsetWidth;
+      wordEl.classList.add("wordIn");
+      actionFlash.classList.remove("show", "correct", "pass");
+      startPromptBtn.classList.remove("show");
+    }
+
+    function hideWordCard(){
+      wordEl.style.display = "none";
+    }
+
+    function showActionFlash(type){
+      clearTimeout(actionFlashTimer);
+      actionFlash.classList.remove("correct", "pass", "show");
+
+      if(type === "correct"){
+        actionFlash.textContent = "CORRECT";
+        actionFlash.classList.add("correct");
+      }else{
+        actionFlash.textContent = "PASS";
+        actionFlash.classList.add("pass");
+      }
+
+      wordEl.style.display = "none";
+      actionFlash.classList.add("show");
+    }
+
+    function hideActionFlash(){
+      actionFlash.classList.remove("show", "correct", "pass");
+      if(roundActive){
+        wordEl.style.display = "flex";
+      }else{
+        hideWordCard();
+      }
+    }
+
+    function transitionToNextWord(type, onCorrect){
+      if(!roundActive || transitionLock) return;
+
+      transitionLock = true;
+      showActionFlash(type);
+
+      actionFlashTimer = setTimeout(() => {
+        if(onCorrect){
+          if(teamTurn === "A") teamAScore++;
+          else teamBScore++;
+          updateScores();
+        }
+
+        showWordCard(drawWord());
+        hideActionFlash();
+        transitionLock = false;
+
+        setTimeout(() => {
+          calibrateTilt();
+        }, 140);
+      }, TRANSITION_DELAY);
+    }
+
+    function normalizeAngle(angle){
+      if (typeof angle !== "number" || Number.isNaN(angle)) return 0;
+      if (angle === -90) return 270;
+      if (angle < 0) return (angle % 360 + 360) % 360;
+      return angle % 360;
+    }
+
+    function getOrientationAngle(){
+      if(screen.orientation && typeof screen.orientation.angle === "number"){
+        return screen.orientation.angle;
+      }
+      if(typeof window.orientation === "number"){
+        return window.orientation;
+      }
+      return 0;
+    }
+
+    function extractTiltValue(e){
+      const gamma = typeof e.gamma === "number" ? e.gamma : null;
+      const beta = typeof e.beta === "number" ? e.beta : null;
+      const angle = getOrientationAngle();
+      const normalized = normalizeAngle(angle);
+
+      if(normalized === 90) return gamma;
+      if(normalized === 270) return gamma !== null ? -gamma : null;
+
+      return beta;
+    }
+
+    function isForeheadPose(e){
+      const v = extractTiltValue(e);
+      if(v === null) return false;
+      const absV = Math.abs(v);
+      return absV >= 28 && absV <= 78;
+    }
+
+    function calibrateTilt(){
+      const candidate = smoothedTiltValue ?? latestTiltValue;
+      if(candidate === null){
+        tiltBaseline = null;
+        return false;
+      }
+
+      tiltBaseline = candidate;
+      tiltArmed = false;
+      lastTiltActionAt = Date.now();
+
+      setTimeout(() => {
+        tiltArmed = true;
+      }, 250);
+
+      return true;
+    }
+
+    function onDeviceOrientation(e){
+      const v = extractTiltValue(e);
+
+      if(v !== null){
+        latestTiltValue = v;
+        // Use slightly faster smoothing for better responsiveness
+        smoothedTiltValue = smoothedTiltValue === null ? v : (smoothedTiltValue * 0.70) + (v * 0.30);
+      }
+
+      if(waitingForForeheadPose){
+        if(isForeheadPose(e)){
+          if(!foreheadStableSince) foreheadStableSince = Date.now();
+          if(Date.now() - foreheadStableSince >= FOREHEAD_READY_MIN_MS){
+            waitingForForeheadPose = false;
+            foreheadStableSince = 0;
+            startCountdownSequence();
+          }
+        }else{
+          foreheadStableSince = 0;
+        }
+        return;
+      }
+
+      const activeTilt = smoothedTiltValue ?? v;
+      if(activeTilt === null) return;
+      if(!roundActive || preRoundActive || matchOver || transitionLock) return;
+      
+      // Auto-recalibrate if baseline is lost or null
+      if(tiltBaseline === null) {
+        tiltBaseline = activeTilt;
+        return;
+      }
+
+      const now = Date.now();
+
+      // If not armed, check if we've returned to neutral zone
+      if(!tiltArmed){
+        if(Math.abs(activeTilt - tiltBaseline) <= TILT_RESET){
+          tiltArmed = true;
+        }
+        // Slightly faster baseline drift compensation when not armed
+        tiltBaseline = (tiltBaseline * 0.88) + (activeTilt * 0.12);
+        return;
+      }
+
+      if(now - lastTiltActionAt < TILT_COOLDOWN) return;
+
+      const delta = activeTilt - tiltBaseline;
+
+      // DOWN = CORRECT (Negative delta)
+      if(delta <= -TILT_THRESHOLD){
+        tiltArmed = false;
+        lastTiltActionAt = now;
+        // Freeze baseline temporarily to prevent immediate drift issues
+        tiltBaseline = activeTilt; 
+        correctWord();
+        return;
+      }
+
+      // UP = PASS (Positive delta)
+      if(delta >= TILT_THRESHOLD){
+        tiltArmed = false;
+        lastTiltActionAt = now;
+        tiltBaseline = activeTilt;
+        skipWord();
+        return;
+      }
+
+      // Continuous slow baseline drift compensation
+      tiltBaseline = (tiltBaseline * 0.94) + (activeTilt * 0.06);
+    }
+
+    async function enableTiltListening(){
+      if(window.__ucTiltListening) return true;
+
+      if(typeof DeviceOrientationEvent !== "undefined" &&
+         typeof DeviceOrientationEvent.requestPermission === "function"){
+        try{
+          const res = await DeviceOrientationEvent.requestPermission();
+          if(res !== "granted") return false;
+        }catch(e){
+          return false;
+        }
+      }
+
+      window.addEventListener("deviceorientation", onDeviceOrientation, true);
+      window.__ucTiltListening = true;
+      return true;
+    }
+
+    function updateRecordingUI(){
+      if(!recordEnabled){
+        recordToggleBtn.textContent = "Recording: Off";
+        recordToggleBtn.className = "gameBtn btnGhost";
+        return;
+      }
+
+      if(isNativeMobile()){
+        recordToggleBtn.textContent = "Recording: On";
+        recordToggleBtn.className = "gameBtn btnSuccess";
+        return;
+      }
+
+      if(webRecordingSupported()){
+        recordToggleBtn.textContent = "Recording: On";
+        recordToggleBtn.className = "gameBtn btnSuccess";
+      }else{
+        recordToggleBtn.textContent = "Recording: Not Supported";
+        recordToggleBtn.className = "gameBtn btnGhost";
+      }
+    }
+
+    function clearLastRecordingUrl(){
+      if(lastRecordingUrl && lastRecordingUrl.startsWith("blob:")){
+        URL.revokeObjectURL(lastRecordingUrl);
+      }
+      lastRecordingUrl = "";
+      lastRecordingBlob = null;
+      lastUploadedVideoUrl = "";
+      lastNativeFileUri = "";
+      recordPreview.removeAttribute("src");
+      recordPreview.load();
+      recordPreviewWrap.style.display = "none";
+      downloadLink.style.display = "none";
+      shareRecordingBtn.style.display = "none";
+    }
+
+    async function ensureWebRecordStream(){
+      if(!webRecordingSupported()) return false;
+      if(recordStream && recordStream.active) return true;
+
+      try{
+        recordStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "user" } },
+          audio: true
+        });
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    function releaseRecordStream(){
+      if(recordStream){
+        recordStream.getTracks().forEach(track => track.stop());
+        recordStream = null;
+      }
+    }
+
+    function getPreferredMimeType(){
+      if(!window.MediaRecorder) return "";
+      const options = [
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+        "video/mp4",
+        "video/mp4;codecs=h264,aac"
+      ];
+      for(const type of options){
+        try{
+          if(MediaRecorder.isTypeSupported(type)) return type;
+        }catch(e){}
+      }
+      return "";
+    }
+
+    function updateRecordingActions(){
+      if(!lastRecordingUrl && !lastNativeFileUri && !lastRecordingBlob){
+        downloadLink.style.display = "none";
+        shareRecordingBtn.style.display = "none";
+        recordPreviewWrap.style.display = "none";
+        return;
+      }
+
+      if(lastRecordingUrl){
+        recordPreview.src = lastRecordingUrl;
+        recordPreviewWrap.style.display = "flex";
+        
+        // Auto-scroll to video if on home screen
+        if(!winOverlay.classList.contains("show")){
+          recordPreviewWrap.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      shareRecordingBtn.style.display = "inline-flex";
+      downloadLink.style.display = "inline-flex";
+      downloadLink.textContent = isNativeMobile() ? "Save Last Recording" : "Download Last Recording";
+      downloadLink.classList.remove("disabled");
+
+      if(!isNativeMobile() && lastRecordingUrl){
+        downloadLink.href = lastRecordingUrl;
+      }
+    }
+
+    async function persistRecording(blob){
+      if(!blob) return;
+
+      const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
+      const fileName = `urban-charades-${Date.now()}.${ext}`;
+      lastSavedFileName = fileName;
+
+      try{
+        if(window.uploadVideo){
+          lastUploadedVideoUrl = await window.uploadVideo(blob, fileName);
+          console.log("Uploaded video URL:", lastUploadedVideoUrl);
+        }
+      }catch(e){
+        console.error("Upload failed:", e);
+      }
+    }
+
+    async function blobToBase64(blob){
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onloadend = () => {
+          const result = reader.result || "";
+          const base64 = String(result).split(",")[1] || "";
+          resolve(base64);
+        };
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function writeBlobToNativeFile(blob, fileName){
+      const Filesystem = Cap?.Plugins?.Filesystem;
+      if(!Filesystem || !blob) return "";
+
+      const base64Data = await blobToBase64(blob);
+      const path = `urban-charades/${fileName}`;
+
+      try{
+        await Filesystem.mkdir({
+          path: "urban-charades",
+          directory: "DOCUMENTS",
+          recursive: true
+        });
+      }catch(e){}
+
+      await Filesystem.writeFile({
+        path,
+        data: base64Data,
+        directory: "DOCUMENTS",
+        recursive: true
+      });
+
+      const uriResult = await Filesystem.getUri({
+        path,
+        directory: "DOCUMENTS"
+      });
+
+      return uriResult?.uri || "";
+    }
+
+    async function ensureShareableRecordingFile(){
+      if(lastNativeFileUri) return lastNativeFileUri;
+
+      if(lastRecordingBlob){
+        const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
+        const fileName = lastSavedFileName || `urban-charades-${Date.now()}.${ext}`;
+        lastNativeFileUri = await writeBlobToNativeFile(lastRecordingBlob, fileName);
+        return lastNativeFileUri;
+      }
+
+      return "";
+    }
+
+    async function startRecordingForRound(){
+      if(!recordEnabled) return;
+
+      clearLastRecordingUrl();
+
+      if(isNativeMobile()){
+        try{
+          const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
+          if(plugin?.startRecording){
+            await NativeRecorder.startFrontRecording({ withAudio: true });
+            usingNativeRecording = true;
+            statusEl.textContent = "🎥 Recording started.";
+            return;
+          }
+        }catch(e){
+          console.error("Native recording start failed:", e);
+          statusEl.textContent = "Native recording failed. Trying fallback...";
+        }
+      }
+
+      usingNativeRecording = false;
+      const ok = await ensureWebRecordStream();
+      if(!ok){
+        statusEl.textContent = "Recording not supported on this device/browser.";
+        return;
+      }
+
+      mediaChunks = [];
+
+      try{
+        const mimeType = getPreferredMimeType();
+        mediaRecorder = mimeType
+          ? new MediaRecorder(recordStream, { mimeType })
+          : new MediaRecorder(recordStream);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if(event.data && event.data.size > 0){
+            mediaChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          try{
+            if(!mediaChunks.length){
+              releaseRecordStream();
+              statusEl.textContent = "No recording data captured.";
+              return;
+            }
+
+            const blob = new Blob(mediaChunks, { type: getPreferredMimeType() || "video/webm" });
+            lastRecordingBlob = blob;
+            window.lastRecordingBlob = blob;
+            lastRecordingMimeType = blob.type;
+            lastRecordingUrl = URL.createObjectURL(blob);
+
+            // Don't await this, let it happen in background
+            persistRecording(blob).catch(err => console.warn("Background persist failed:", err));
+            
+            updateRecordingActions();
+
+            statusEl.textContent = "✅ Video Ready!";
+            setTimeout(() => {
+              if(statusEl.textContent === "✅ Video Ready!") statusEl.textContent = "";
+            }, 5000);
+          } catch(e){
+            console.error("onstop failed:", e);
+            statusEl.textContent = "❌ Error processing video.";
+          } finally {
+            releaseRecordStream();
+          }
+        };
+
+        mediaRecorder.start();
+        statusEl.textContent = "🎥 Fallback recording started.";
+      }catch(e){
+        console.error("Fallback recording failed:", e);
+        statusEl.textContent = "Recording could not start.";
+      }
+    }
+
+    async function stopRecordingIfActive(){
+      if(isNativeMobile() && usingNativeRecording){
+        try{
+          const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
+          if(plugin?.stopRecording){
+            const result = await plugin.stopRecording();
+            let nativePath = result?.path || result?.filePath || result?.fileUrl || result?.url || result?.videoUrl || result?.uri;
+            if(nativePath){
+              const cleanPath = nativePath.replace(/^file:\/\//, "");
+              lastNativeFileUri = nativePath;
+              const previewUrl = Cap.convertFileSrc ? Cap.convertFileSrc(nativePath) : nativePath;
+              lastRecordingUrl = previewUrl;
+              recordPreview.src = previewUrl;
+              recordPreview.load();
+
+              try {
+                const Filesystem = Cap?.Plugins?.Filesystem;
+                if (Filesystem) {
+                   const fileData = await Filesystem.readFile({ path: cleanPath });
+                   if (fileData?.data) {
+                      const blob = await (await fetch(`data:${fileData.data.includes(",") ? "" : "video/mp4;base64,"}${fileData.data}`)).blob();
+                      lastRecordingBlob = blob;
+                      window.lastRecordingBlob = blob;
+                      lastRecordingMimeType = "video/mp4";
+                   }
+                }
+                if(!lastSavedFileName) lastSavedFileName = `urban-charades-${Date.now()}.mp4`;
+                if (lastRecordingBlob) await persistRecording(lastRecordingBlob);
+              } catch(e) {}
+              updateRecordingActions();
+            }
+          }
+        }catch(e){ console.error(e); }
+        usingNativeRecording = false;
+        return;
+      }
+
+      // Web Fallback
+      try{
+        if(mediaRecorder && mediaRecorder.state !== "inactive"){
+          mediaRecorder.stop();
+        }else{
+          releaseRecordStream();
+        }
+      }catch(e){
+        console.error("Stop failed:", e);
+        releaseRecordStream();
+      }
+      usingNativeRecording = false;
+    }
+
+    async function shareLastRecording(){
+      const Share = Cap?.Plugins?.Share;
+
+      if(isNativeMobile()){
+        try{
+          const Share = Cap?.Plugins?.Share;
+          const nativeUri = await ensureShareableRecordingFile();
+
+          if(nativeUri && Share?.share){
+            statusEl.textContent = "Opening share sheet...";
+            await Share.share({
+              title: "Urban Charades Video",
+              text: "Check out my charades round!",
+              url: nativeUri,
+              files: [nativeUri],
+              dialogTitle: "Share recording"
+            });
+            statusEl.textContent = "Shared!";
+            return;
+          }
+
+          if(lastUploadedVideoUrl && Share?.share){
+            await Share.share({
+              title: "Urban Charades Video",
+              text: "Check out my charades round!",
+              url: lastUploadedVideoUrl,
+              dialogTitle: "Share recording"
+            });
+            statusEl.textContent = "Shared URL!";
+            return;
+          }
+        }catch(e){
+          console.log("Share dialog closed/failed:", e);
+        }
+        return;
+      }
+
+      const blobToShare = lastRecordingBlob || window.lastRecordingBlob;
+      if(navigator.share && blobToShare){
+        try{
+          const file = new File(
+            [blobToShare],
+            lastSavedFileName || "urban-charades-recording.webm",
+            { type: lastRecordingMimeType || "video/webm" }
+          );
+          await navigator.share({
+            title: "Urban Charades Recording",
+            files: [file]
+          });
+        }catch(e){
+          console.log("Web share failed:", e);
+        }
+      } else if(navigator.share && lastUploadedVideoUrl){
+        try{
+          await navigator.share({
+            title: "Urban Charades Recording",
+            text: "Check out my Urban Charades video!",
+            url: lastUploadedVideoUrl
+          });
+          return;
+        }catch(e){
+          console.log("URL share failed:", e);
+        }
+      }
+
+      statusEl.textContent = "Sharing not supported on this phone.";
+    }
+
+    function launchConfettiBurst(count = 90){
+      const colors = ["#ffd36d", "#ff6d84", "#42cf7d", "#ffffff", "#7ed0ff", "#9f7bff"];
+      for(let i = 0; i < count; i++){
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = `${8 + Math.random() * 8}px`;
+        piece.style.height = `${12 + Math.random() * 12}px`;
+        piece.style.opacity = `${0.85 + Math.random() * 0.15}`;
+        piece.style.setProperty("--driftX", `${-140 + Math.random() * 280}px`);
+        piece.style.setProperty("--spin", `${360 + Math.random() * 1080}deg`);
+        piece.style.animationDuration = `${2.4 + Math.random() * 1.8}s`;
+        piece.style.animationDelay = `${Math.random() * 0.25}s`;
+        confettiLayer.appendChild(piece);
+        setTimeout(() => piece.remove(), 4500);
+      }
+    }
+
+    function buildCategoryGrid(){
+      categoryGrid.innerHTML = "";
+      CATEGORY_DEFS.forEach((c)=>{
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "categoryCard";
+        btn.setAttribute("data-cat", c.key);
+
+        const img = document.createElement("img");
+        img.className = "categoryImg";
+        img.alt = c.key;
+        img.src = c.img;
+        img.onerror = () => btn.classList.add("noImg");
+
+        const fallback = document.createElement("div");
+        fallback.className = "categoryFallbackLabel";
+        fallback.textContent = c.key;
+
+        btn.appendChild(img);
+        btn.appendChild(fallback);
+
+        btn.addEventListener("click", ()=>{
+          if(matchOver || preRoundActive || introOverlay.classList.contains("show")) return;
+
+          safePlay(soundTap, 640, 90);
+          btn.classList.remove("tapPop");
+          void btn.offsetWidth;
+          btn.classList.add("tapPop");
+
+          selectedCategory = c.key;
+          restockPool();
+          statusEl.textContent = "🗂️ Category selected — tap the red button to start.";
+          hideActionFlash();
+          hideWordCard();
+          markSelectedCategory();
+          updateStartPrompt();
+        });
+
+        categoryGrid.appendChild(btn);
+      });
+
+      markSelectedCategory();
+    }
+
+    function markSelectedCategory(){
+      [...categoryGrid.querySelectorAll(".categoryCard")].forEach(el=>{
+        el.classList.toggle("selected", el.getAttribute("data-cat") === selectedCategory);
+      });
+    }
+
+    async function beginCountdownPrompt(){
+      if(!selectedCategory || roundActive || matchOver || preRoundActive) return;
+
+      roundSeconds = parseInt(roundLengthSelect.value, 10) || 60;
+      applyTiltSettings();
+
+      preRoundActive = true;
+      updateStartPrompt();
+      hideWordCard();
+      await lockGameLandscape();
+
+      overlaySub.textContent = `${currentTeamName()}, place the phone on your forehead to begin.`;
+      countNum.textContent = "READY";
+      foreheadOverlay.classList.add("show");
+
+      clearCountdownTimers();
+      waitingForForeheadPose = true;
+      foreheadStableSince = 0;
+    }
+
+    function startCountdownSequence(){
+      if(!preRoundActive) return;
+
+      overlaySub.textContent = `${currentTeamName()}, hold steady...`;
+      countNum.textContent = "3";
+
+      clearCountdownTimers();
+
+      const steps = [
+        { t: 0, label: "3" },
+        { t: 1000, label: "2" },
+        { t: 2000, label: "1" },
+        { t: 3000, label: "GO!" }
+      ];
+
+      steps.forEach(step => {
+        countdownTimers.push(setTimeout(() => {
+          countNum.textContent = step.label;
+          beep(step.label === "GO!" ? 1040 : 740, step.label === "GO!" ? 260 : 170);
+        }, step.t));
+      });
+
+      countdownTimers.push(setTimeout(() => {
+        foreheadOverlay.classList.remove("show");
+        preRoundActive = false;
+        calibrateTilt();
+        startActualRound();
+      }, 3600));
+    }
+
+    async function startActualRound(){
+      if(!selectedCategory || roundActive || matchOver) return;
+
+      roundActive = true;
+      timeLeft = roundSeconds;
+      timerEl.textContent = `Time: ${timeLeft}`;
+      timerEl.style.color = "#0d2d56";
+      statusEl.textContent = "Round started! Tilt UP to PASS • Tilt DOWN for CORRECT";
+      hideActionFlash();
+      showWordCard(drawWord());
+      setFocusMode(true);
+
+      setTimeout(() => calibrateTilt(), 350);
+
+      safePlay(soundStart, 880, 180);
+      await startRecordingForRound();
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        timeLeft--;
+        timerEl.textContent = `Time: ${timeLeft}`;
+
+        if(timeLeft <= 10){
+          timerEl.style.color = "#fff7f8";
+        }else{
+          timerEl.style.color = "#0d2d56";
+        }
+
+        if(timeLeft <= 0) endRound();
+      }, 1000);
+
+      updateStartPrompt();
+    }
+
+    async function endRound(){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      clearCountdownTimers();
+
+      roundActive = false;
+      waitingForForeheadPose = false;
+      foreheadStableSince = 0;
+      transitionLock = false;
+      clearTimeout(actionFlashTimer);
+
+      hideActionFlash();
+      hideWordCard();
+      setFocusMode(false);
+
+      safePlay(soundTimeUp, 320, 260);
+      statusEl.textContent = "⏳ Stopping recording...";
+      await stopRecordingIfActive();
+      await unlockGameOrientation();
+
+      if(teamTurn === "A"){
+        teamTurn = "B";
+        updateTurnUI();
+        statusEl.textContent = `⏰ Time’s up! Next: ${currentTeamName()} — tap the red button to start.`;
+      }else{
+        console.log("Round ended for Team B, match is over.");
+        matchOver = true;
+        showWinScreen();
+      }
+
+      timerEl.style.color = "#0d2d56";
+      updateStartPrompt();
+    }
+
+    function skipWord(){
+      if(!roundActive || transitionLock) return;
+      safePlay(soundSkip, 520, 120);
+      transitionToNextWord("pass", false);
+    }
+
+    function correctWord(){
+      if(!roundActive || transitionLock) return;
+      safePlay(soundCorrect, 980, 130);
+      transitionToNextWord("correct", true);
+    }
+
+    function showWinScreen(){
+      finalScoreA.textContent = `${teamANameLabel.textContent}: ${teamAScore}`;
+      finalScoreB.textContent = `${teamBNameLabel.textContent}: ${teamBScore}`;
+
+      if(teamAScore > teamBScore) winTeamEl.textContent = `${teamANameLabel.textContent} Wins! 🎉`;
+      else if(teamBScore > teamAScore) winTeamEl.textContent = `${teamBNameLabel.textContent} Wins! 🎉`;
+      else winTeamEl.textContent = "It’s a tie! 🤝";
+
+      winnerCard.classList.remove("winnerBurst");
+      void winnerCard.offsetWidth;
+      winnerCard.classList.add("winnerBurst");
+
+      launchConfettiBurst(110);
+      winOverlay.classList.add("show");
+    }
+
+    async function resetScoresOnly(){
+      teamAScore = 0;
+      teamBScore = 0;
+      updateScores();
+      teamTurn = "A";
+      updateTurnUI();
+      matchOver = false;
+      hideWordCard();
+      hideActionFlash();
+      await unlockGameOrientation();
+      timerEl.style.color = "#0d2d56";
+      statusEl.textContent = "Tap the button below to start Team A's turn!"; // Clear the old message
+      updateStartPrompt();
+    }
+
+    async function newGame(){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      clearCountdownTimers();
+      await unlockGameOrientation();
+
+      matchOver = false;
+      roundActive = false;
+      preRoundActive = false;
+      waitingForForeheadPose = false;
+      foreheadStableSince = 0;
+
+      selectedCategory = "";
+      wordPool = [];
+      teamAScore = 0;
+      teamBScore = 0;
+      teamTurn = "A";
+
+      updateScores();
+      updateTurnUI();
+      clearLastRecordingUrl();
+      hideActionFlash();
+      showWordCard("Choose a category to get started!");
+      statusEl.textContent = "Choose a category to get started!";
+      markSelectedCategory();
+      updateStartPrompt();
+    }
+
+    function enterGame(){
+      applyTeamNames(); // Ensure default names are set
+      introOverlay.classList.remove("show");
+      updateRecordingUI();
+      updateStartPrompt();
+      statusEl.textContent = "Choose a category to get started!";
+      showWordCard("Choose a category to get started!");
+
+      setTimeout(async () => {
+        try{
+          ensureAudioContext();
+          playIntroChime();
+        }catch(e){}
+
+        try{
+          await enableTiltListening();
+        }catch(e){}
+
+        // Request camera/mic permissions early
+        try{
+          if (recordEnabled) {
+            statusEl.textContent = "Requesting permissions...";
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // Stop the tracks immediately, we just want the permission
+            stream.getTracks().forEach(track => track.stop());
+            statusEl.textContent = "Permissions granted.";
+          }
+        }catch(e){
+          console.warn("Initial permission request failed or denied:", e);
+          statusEl.textContent = "Please allow camera access for recording.";
+        }
+      }, 0);
+    }
+
+    enterAppBtn.onclick = enterGame;
+    startPromptBtn.onclick = beginCountdownPrompt;
+    shareRecordingBtn.onclick = shareLastRecording;
+    
+    
+    const handleDownload = async (e) => {
+      if(e) e.preventDefault();
+
+      if(isNativeMobile()){
+        try{
+          const Share = Cap?.Plugins?.Share;
+          const nativeUri = await ensureShareableRecordingFile();
+
+          if(nativeUri && Share?.share){
+            statusEl.textContent = "Opening save/share menu...";
+            await Share.share({
+              title: "Save Urban Charades Recording",
+              text: "Save or send this recording.",
+              files: [nativeUri],
+              dialogTitle: "Save recording"
+            });
+            statusEl.textContent = "Recording menu opened.";
+            return;
+          }
+
+          statusEl.textContent = "Could not prepare recording file.";
+          return;
+        }catch(err){
+          console.error(err);
+          statusEl.textContent = "Save failed on this device.";
+          return;
+        }
+      }
+
+      if(lastRecordingBlob || window.lastRecordingBlob){
+        try{
+          const blobToSave = lastRecordingBlob || window.lastRecordingBlob;
+          const url = URL.createObjectURL(blobToSave);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          statusEl.textContent = "Saving to device...";
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          return;
+        }catch(e){
+          console.error(e);
+        }
+      }
+
+      if(lastRecordingUrl){
+        try{
+          const a = document.createElement("a");
+          a.href = lastRecordingUrl;
+          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          statusEl.textContent = "Saving to device...";
+          return;
+        }catch(e){
+          console.error(e);
+        }
+      }
+
+      statusEl.textContent = "Save failed on this device.";
+    };
+    
+    downloadLink.onclick = handleDownload;
+
+    recordToggleBtn.onclick = () => {
+      recordEnabled = !recordEnabled;
+      updateRecordingUI();
+      statusEl.textContent = recordEnabled ? "🎥 Recording is ON." : "🎥 Recording turned off.";
+    };
+
+    playAgainBtn.onclick = async () => {
+      winOverlay.classList.remove("show");
+      await resetScoresOnly();
+    };
+
+    newGameBtn.onclick = async () => {
+      winOverlay.classList.remove("show");
+      await newGame();
+    };
+
+    teamANameInput.addEventListener("blur", applyTeamNames);
+    teamBNameInput.addEventListener("blur", applyTeamNames);
+
+    teamANameInput.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        applyTeamNames();
+        teamANameInput.blur();
+      }
+    });
+
+    teamBNameInput.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        applyTeamNames();
+        teamBNameInput.blur();
+      }
+    });
+
+    teamANameLabel.addEventListener("click", ()=> editTeam("A"));
+    teamBNameLabel.addEventListener("click", ()=> editTeam("B"));
+
+    roundLengthSelect.addEventListener("change", ()=>{
+      if(!roundActive && !preRoundActive){
+        timerEl.textContent = `Time: ${roundLengthSelect.value}`;
+      }
+    });
+
+    window.addEventListener("orientationchange", () => {
+      if(preRoundActive || roundActive){
+        setTimeout(() => calibrateTilt(), 350);
+      }
+    });
+
+    wordEl.addEventListener("click", (e)=>{
+      if(!roundActive || transitionLock) return;
+      const rect = wordEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      if(x < rect.width / 2) skipWord();
+      else correctWord();
+    });
+
+    document.addEventListener("keydown", (e)=>{
+      if(!roundActive || transitionLock) return;
+      if(e.key === "ArrowLeft" || e.key === "ArrowUp") skipWord();
+      if(e.key === "ArrowRight" || e.key === "ArrowDown") correctWord();
+    });
+
+    applyTiltSettings();
+    applyTeamNames();
+    updateScores();
+    updateTurnUI();
+    buildCategoryGrid();
+    updateRecordingUI();
+    updateStartPrompt();
+    hideActionFlash();
+    showWordCard("Choose a category to get started!");
+    timerEl.textContent = `Time: ${roundLengthSelect.value}`;
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      });
+    }
+
+    window.addEventListener("beforeunload", () => {
+      clearInterval(timerInterval);
+      clearCountdownTimers();
+      clearTimeout(actionFlashTimer);
+      releaseRecordStream();
+      if(lastRecordingUrl && lastRecordingUrl.startsWith("blob:")){
+        URL.revokeObjectURL(lastRecordingUrl);
+      }
+    });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCWzHLbbVDAFcFUttBmE73umr2pkfOnlQ",
+      authDomain: "urban-charades.firebaseapp.com",
+      projectId: "urban-charades",
+      storageBucket: "urban-charades.firebasestorage.app",
+      messagingSenderId: "29774201320",
+      appId: "1:29774201320:web:13dea776a1b2137ce2a45d"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const storage = getStorage(firebaseApp);
+
+    async function uploadVideo(fileBlob, fileName = "") {
+      try {
+        if (!fileBlob) throw new Error("No video blob provided");
+
+        const safeName = fileName && typeof fileName === "string"
+          ? fileName.replace(/[^a-zA-Z0-9._-]/g, "_")
+          : `urban_charades_${Date.now()}.mp4`;
+
+        const videoRef = ref(storage, `videos/${safeName}`);
+        await uploadBytes(videoRef, fileBlob);
+        const url = await getDownloadURL(videoRef);
+
+        console.log("Video uploaded:", url);
+        return url;
+      } catch (err) {
+        console.error("Firebase upload failed:", err);
+        throw err;
+      }
+    }
+
+    window.uploadVideo = uploadVideo;
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+
+android/
+ios/
+
+# Keystores and Sensitive files (IMPORTANT)
+*.jks
+*.keystore
+*.p12
+*.pem
+google-services.json
+GoogleService-Info.plist
+
+# IDEs and Tools
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
