@@ -1,0 +1,25 @@
+{
+  "name": "urban-charades-app",
+  "version": "1.0.0",
+  "description": "Urban Charades PWA and Mobile App",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve www",
+    "build": "echo 'No build step needed for this static app'",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/share": "^8.0.0",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/device": "^8.0.0",
+    "@capacitor/screen-orientation": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.3.0"
+  }
+}
