@@ -1,4 +1,4 @@
-const CACHE_NAME = "urban-charades-v11";
+const CACHE_NAME = "urban-charades-v13";
 const OFFLINE_URL = "./index.html";
 
 const ASSETS = [

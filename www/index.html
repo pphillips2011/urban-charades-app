@@ -854,7 +854,6 @@
       gap: 8px;
       padding: 0;
       margin: 10px auto 20px auto;
-      /* Reduced margin */
     }
 
     #recordPreviewWrap {
@@ -1123,7 +1122,7 @@
       </div>
     </div>
 
-    <div id="turnIndicator">Team A’s Turn</div>
+    <div id="turnIndicator">Team A's Turn</div>
 
     <div id="scoreboard">
       <div id="teamA" class="team active">
@@ -1174,7 +1173,6 @@
 
     const NativeRecorder = {
       async startFrontRecording() {
-        // Check for common Capacitor plugin names for video recording
         const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
         if (plugin?.startRecording) {
           return plugin.startRecording({
@@ -1237,11 +1235,6 @@
     const finalScoreB = document.getElementById("finalScoreB");
     const playAgainBtn = document.getElementById("playAgainBtn");
     const newGameBtn = document.getElementById("newGameBtn");
-
-    const winDownloadBtn = null;
-    const winShareBtn = null;
-    const winRecordPreview = null;
-    const winVideoWrap = null;
 
     const soundCorrect = document.getElementById("soundCorrect");
     const soundSkip = document.getElementById("soundSkip");
@@ -1376,8 +1369,20 @@
     let latestTiltValue = null;
     let smoothedTiltValue = null;
     let tiltBaseline = null;
+    let hasMotionTilt = false;
+    let latestMotionAxes = null;
+    let latestOrientationAxes = null;
+    let tiltCalibration = null;
     let tiltArmed = true;
     let lastTiltActionAt = 0;
+
+    let tiltCandidateAction = null;
+    let tiltCandidateCount = 0;
+    let tiltLockedAction = null;
+    let tiltLockedAt = 0;
+    let tiltPositivePeak = 0;
+    let tiltNegativePeak = 0;
+    let tiltNeutralSince = 0;
 
     let audioCtx = null;
     let recordEnabled = true;
@@ -1385,20 +1390,32 @@
     let recordStream = null;
     let mediaRecorder = null;
     let mediaChunks = [];
+    let activeRecordingMimeType = "";
     let lastRecordingUrl = "";
     let lastRecordingBlob = null;
     let lastRecordingMimeType = "video/webm";
     let lastUploadedVideoUrl = "";
     let lastSavedFileName = "";
     let lastNativeFileUri = "";
-    let usingNativeRecording = false; // New flag to track recording source
+    let usingNativeRecording = false;
+
+    const NATIVE_RECORDING_DIR = "CACHE";
 
     const FOREHEAD_READY_MIN_MS = 650;
     const TRANSITION_DELAY = 700;
 
-    let TILT_THRESHOLD = 18; // Slightly higher for better deliberate movement detection
-    let TILT_RESET = 8;
-    let TILT_COOLDOWN = 650; // Reduced cooldown for snappier feel
+    let TILT_CORRECT_THRESHOLD = 1.4;
+    let TILT_PASS_THRESHOLD = 1.4;
+    let TILT_RESET = 0.8;
+    let TILT_COOLDOWN = 300;
+
+    const TILT_GESTURE_START = 0.8;
+    const TILT_CONFIRM_SAMPLES = 2;
+    const TILT_CORRECT_CONFIRM_SAMPLES = 3;
+    const TILT_LOCK_TIMEOUT = 650;
+    const TILT_NEUTRAL_STABLE_MS = 80;
+    const TILT_CALIBRATION_MS = 1200;
+    const TILT_CALIBRATION_SETTLE_MS = 650;
 
     function getPlatformName() {
       return Cap.getPlatform ? Cap.getPlatform() : "web";
@@ -1426,7 +1443,7 @@
         if (ScreenOrientationPlugin?.lock) {
           await ScreenOrientationPlugin.lock({ orientation: "landscape-primary" });
         }
-      } catch (e) { }
+      } catch (e) {}
     }
 
     async function unlockGameOrientation() {
@@ -1434,7 +1451,6 @@
         try {
           const ScreenOrientation = Cap?.Plugins?.ScreenOrientation;
           if (ScreenOrientation?.lock) {
-            // Force back to portrait instead of just unlock
             await ScreenOrientation.lock({ orientation: "portrait" });
           }
         } catch (e) { console.error(e); }
@@ -1442,9 +1458,17 @@
     }
 
     function applyTiltSettings() {
-      TILT_THRESHOLD = 16;
-      TILT_RESET = 7;
-      TILT_COOLDOWN = 850;
+      TILT_CORRECT_THRESHOLD = 1.4;
+      TILT_PASS_THRESHOLD = 1.4;
+      TILT_RESET = 0.8;
+      TILT_COOLDOWN = 300;
+      tiltCandidateAction = null;
+      tiltCandidateCount = 0;
+      tiltLockedAction = null;
+      tiltLockedAt = 0;
+      tiltPositivePeak = 0;
+      tiltNegativePeak = 0;
+      tiltNeutralSince = 0;
     }
 
     function ensureAudioContext() {
@@ -1452,7 +1476,7 @@
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
         if (!audioCtx) audioCtx = new AC();
-        if (audioCtx.state === "suspended") audioCtx.resume().catch(() => { });
+        if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
         return audioCtx;
       } catch (e) {
         return null;
@@ -1492,7 +1516,7 @@
         gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / 1000);
         osc.stop(now + duration / 1000 + 0.02);
-      } catch (e) { }
+      } catch (e) {}
     }
 
     function playIntroChime() {
@@ -1632,10 +1656,6 @@
         showWordCard(drawWord());
         hideActionFlash();
         transitionLock = false;
-
-        setTimeout(() => {
-          calibrateTilt();
-        }, 140);
       }, TRANSITION_DELAY);
     }
 
@@ -1659,20 +1679,178 @@
     function extractTiltValue(e) {
       const gamma = typeof e.gamma === "number" ? e.gamma : null;
       const beta = typeof e.beta === "number" ? e.beta : null;
-      const angle = getOrientationAngle();
-      const normalized = normalizeAngle(angle);
+      const isLandscapeView = window.innerWidth > window.innerHeight;
 
-      if (normalized === 90) return gamma;
-      if (normalized === 270) return gamma !== null ? -gamma : null;
+      if (isLandscapeView) {
+        return beta !== null ? beta / 8 : gamma !== null ? gamma / 8 : null;
+      }
 
-      return beta;
+      return beta !== null ? beta / 8 : null;
+    }
+
+    function extractMotionTiltValue(e) {
+      const g = e.accelerationIncludingGravity || e.acceleration;
+      if (!g) return null;
+
+      latestMotionAxes = {
+        x: typeof g.x === "number" ? g.x : null,
+        y: typeof g.y === "number" ? g.y : null,
+        z: typeof g.z === "number" ? g.z : null
+      };
+
+      return getCurrentTiltValue();
+    }
+
+    function getTiltCandidates() {
+      const candidates = {};
+
+      if (latestMotionAxes) {
+        if (typeof latestMotionAxes.x === "number") candidates.mx = latestMotionAxes.x;
+        if (typeof latestMotionAxes.y === "number") candidates.my = latestMotionAxes.y;
+        if (typeof latestMotionAxes.z === "number") candidates.mz = latestMotionAxes.z;
+      }
+
+      if (latestOrientationAxes) {
+        if (typeof latestOrientationAxes.beta === "number") candidates.ob = latestOrientationAxes.beta / 8;
+        if (typeof latestOrientationAxes.gamma === "number") candidates.og = latestOrientationAxes.gamma / 8;
+      }
+
+      return candidates;
+    }
+
+    function getCurrentTiltValue() {
+      const candidates = getTiltCandidates();
+      if (tiltCalibration && typeof candidates[tiltCalibration.axis] === "number") {
+        return candidates[tiltCalibration.axis] * tiltCalibration.sign;
+      }
+
+      if (typeof candidates.mz === "number") return candidates.mz;
+      if (typeof candidates.mx === "number") return candidates.mx;
+      if (typeof candidates.my === "number") return candidates.my;
+      if (typeof candidates.ob === "number") return candidates.ob;
+      if (typeof candidates.og === "number") return candidates.og;
+      return null;
+    }
+
+    function captureTiltSnapshot() {
+      return { ...getTiltCandidates() };
+    }
+
+    function strongestDeltasFrom(base) {
+      const current = getTiltCandidates();
+      const result = {};
+      Object.keys(current).forEach((key) => {
+        if (typeof base[key] === "number") {
+          result[key] = current[key] - base[key];
+        }
+      });
+      return result;
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function collectTiltGesture(base) {
+      const peaks = {};
+      const startedAt = Date.now();
+
+      while (Date.now() - startedAt < TILT_CALIBRATION_MS) {
+        const deltas = strongestDeltasFrom(base);
+        Object.keys(deltas).forEach((key) => {
+          const value = deltas[key];
+          if (typeof peaks[key] !== "number" || Math.abs(value) > Math.abs(peaks[key])) {
+            peaks[key] = value;
+          }
+        });
+        await delay(50);
+      }
+
+      return peaks;
+    }
+
+    function chooseTiltCalibration(passPeaks, correctPeaks) {
+      const keys = new Set([...Object.keys(passPeaks), ...Object.keys(correctPeaks)]);
+      let best = null;
+
+      keys.forEach((key) => {
+        const passDelta = passPeaks[key];
+        const correctDelta = correctPeaks[key];
+        if (typeof passDelta !== "number" || typeof correctDelta !== "number") return;
+        if (Math.abs(passDelta) < 0.8 || Math.abs(correctDelta) < 0.8) return;
+
+        const oppositeDirections = Math.sign(passDelta) !== Math.sign(correctDelta);
+        const score = Math.abs(passDelta) + Math.abs(correctDelta) + (oppositeDirections ? 4 : 0);
+        if (!best || score > best.score) {
+          best = {
+            axis: key,
+            sign: passDelta >= 0 ? 1 : -1,
+            score
+          };
+        }
+      });
+
+      return best || { axis: "mz", sign: 1, score: 0 };
+    }
+
+    async function startTiltCalibrationSequence() {
+      if (!preRoundActive) return;
+
+      clearCountdownTimers();
+      overlaySub.textContent = "Tilt UP now for PASS.";
+      countNum.textContent = "PASS";
+      beep(740, 140);
+      await delay(TILT_CALIBRATION_SETTLE_MS);
+      const passBase = captureTiltSnapshot();
+      const passPeaks = await collectTiltGesture(passBase);
+
+      overlaySub.textContent = "Return to center.";
+      countNum.textContent = "CENTER";
+      await delay(TILT_CALIBRATION_SETTLE_MS);
+
+      overlaySub.textContent = "Tilt DOWN now for CORRECT.";
+      countNum.textContent = "CORRECT";
+      beep(520, 140);
+      await delay(TILT_CALIBRATION_SETTLE_MS);
+      const correctBase = captureTiltSnapshot();
+      const correctPeaks = await collectTiltGesture(correctBase);
+
+      tiltCalibration = chooseTiltCalibration(passPeaks, correctPeaks);
+      latestTiltValue = null;
+      smoothedTiltValue = null;
+      tiltBaseline = null;
+      resetTiltGestureState();
+
+      startCountdownSequence();
+    }
+
+    function updateTiltValue(v, smoothing = 0.55) {
+      if (v === null || Number.isNaN(v)) return;
+      latestTiltValue = v;
+      smoothedTiltValue = smoothedTiltValue === null ? v : (smoothedTiltValue * smoothing) + (v * (1 - smoothing));
     }
 
     function isForeheadPose(e) {
       const v = extractTiltValue(e);
       if (v === null) return false;
-      const absV = Math.abs(v);
+      const absV = Math.abs(v * 8);
       return absV >= 28 && absV <= 78;
+    }
+
+    function resetTiltGestureState() {
+      tiltCandidateAction = null;
+      tiltCandidateCount = 0;
+      tiltLockedAction = null;
+      tiltLockedAt = 0;
+      tiltPositivePeak = 0;
+      tiltNegativePeak = 0;
+    }
+
+    function disarmTiltUntilNeutral(now = Date.now()) {
+      tiltArmed = false;
+      tiltNeutralSince = 0;
+      lastTiltActionAt = now;
+      resetTiltGestureState();
     }
 
     function calibrateTilt() {
@@ -1683,23 +1861,102 @@
       }
 
       tiltBaseline = candidate;
-      tiltArmed = false;
-      lastTiltActionAt = Date.now();
-
-      setTimeout(() => {
-        tiltArmed = true;
-      }, 250);
-
+      disarmTiltUntilNeutral();
       return true;
     }
 
-    function onDeviceOrientation(e) {
-      const v = extractTiltValue(e);
+    function handleTiltSample(v) {
+      if (v === null) return;
+      if (!roundActive || preRoundActive || matchOver || transitionLock) return;
 
-      if (v !== null) {
-        latestTiltValue = v;
-        smoothedTiltValue = smoothedTiltValue === null ? v : (smoothedTiltValue * 0.70) + (v * 0.30);
+      const activeTilt = smoothedTiltValue ?? v;
+      if (activeTilt === null) return;
+
+      if (tiltBaseline === null) {
+        tiltBaseline = activeTilt;
+        disarmTiltUntilNeutral();
+        return;
       }
+
+      const now = Date.now();
+      const delta = activeTilt - tiltBaseline;
+      const absDelta = Math.abs(delta);
+
+      if (!tiltArmed) {
+        resetTiltGestureState();
+
+        if (absDelta <= TILT_RESET) {
+          if (!tiltNeutralSince) tiltNeutralSince = now;
+          if (now - tiltNeutralSince >= TILT_NEUTRAL_STABLE_MS && now - lastTiltActionAt >= TILT_COOLDOWN) {
+            tiltArmed = true;
+          }
+        } else {
+          tiltNeutralSince = 0;
+        }
+        return;
+      }
+
+      if (absDelta <= TILT_RESET) {
+        resetTiltGestureState();
+        tiltNeutralSince = now;
+        return;
+      }
+
+      let detectedAction = null;
+
+      if (delta >= TILT_PASS_THRESHOLD) {
+        detectedAction = "pass";
+      } else if (delta <= -TILT_CORRECT_THRESHOLD) {
+        detectedAction = "correct";
+      }
+
+      if (!detectedAction) {
+        tiltCandidateAction = null;
+        tiltCandidateCount = 0;
+        return;
+      }
+
+      if (tiltCandidateAction === detectedAction) {
+        tiltCandidateCount++;
+      } else {
+        tiltCandidateAction = detectedAction;
+        tiltCandidateCount = 1;
+      }
+
+      const requiredSamples = detectedAction === "correct" ? TILT_CORRECT_CONFIRM_SAMPLES : TILT_CONFIRM_SAMPLES;
+      if (tiltCandidateCount < requiredSamples) return;
+
+      disarmTiltUntilNeutral(now);
+
+      if (detectedAction === "correct") {
+        correctWord();
+      } else {
+        skipWord();
+      }
+    }
+
+    function onDeviceMotion(e) {
+      const v = extractMotionTiltValue(e);
+      if (v === null) return;
+
+      if (!hasMotionTilt) {
+        hasMotionTilt = true;
+        latestTiltValue = null;
+        smoothedTiltValue = null;
+        tiltBaseline = null;
+        resetTiltGestureState();
+      }
+
+      updateTiltValue(v, 0.45);
+      handleTiltSample(v);
+    }
+
+    function onDeviceOrientation(e) {
+      latestOrientationAxes = {
+        beta: typeof e.beta === "number" ? e.beta : null,
+        gamma: typeof e.gamma === "number" ? e.gamma : null
+      };
+      const v = extractTiltValue(e);
 
       if (waitingForForeheadPose) {
         if (isForeheadPose(e)) {
@@ -1707,7 +1964,7 @@
           if (Date.now() - foreheadStableSince >= FOREHEAD_READY_MIN_MS) {
             waitingForForeheadPose = false;
             foreheadStableSince = 0;
-            startCountdownSequence();
+            startTiltCalibrationSequence();
           }
         } else {
           foreheadStableSince = 0;
@@ -1715,69 +1972,49 @@
         return;
       }
 
-      const activeTilt = smoothedTiltValue ?? v;
-      if (activeTilt === null) return;
-      if (!roundActive || preRoundActive || matchOver || transitionLock) return;
+      // Gameplay tilt uses devicemotion only; orientation is only for forehead-ready detection.
+    }
 
-      // Auto-recalibrate if baseline is lost or null
-      if (tiltBaseline === null) {
-        tiltBaseline = activeTilt;
-        return;
-      }
-
-      const now = Date.now();
-
-      // If not armed, check if we've returned to neutral zone
-      if (!tiltArmed) {
-        if (Math.abs(activeTilt - tiltBaseline) <= TILT_RESET) {
-          tiltArmed = true;
+    async function requestMotionPermission() {
+      if (typeof DeviceMotionEvent !== "undefined" &&
+        typeof DeviceMotionEvent.requestPermission === "function") {
+        try {
+          const res = await DeviceMotionEvent.requestPermission();
+          return res === "granted";
+        } catch (e) {
+          return false;
         }
-        // Slightly faster baseline drift compensation when not armed
-        tiltBaseline = (tiltBaseline * 0.88) + (activeTilt * 0.12);
-        return;
       }
+      return true;
+    }
 
-      if (now - lastTiltActionAt < TILT_COOLDOWN) return;
-
-      const delta = activeTilt - tiltBaseline;
-
-      // DOWN = CORRECT (Negative delta)
-      if (delta <= -TILT_THRESHOLD) {
-        tiltArmed = false;
-        lastTiltActionAt = now;
-        // Freeze baseline temporarily to prevent immediate drift issues
-        tiltBaseline = activeTilt;
-        correctWord();
-        return;
+    async function requestOrientationPermission() {
+      if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function") {
+        try {
+          const res = await DeviceOrientationEvent.requestPermission();
+          return res === "granted";
+        } catch (e) {
+          return false;
+        }
       }
-
-      // UP = PASS (Positive delta)
-      if (delta >= TILT_THRESHOLD) {
-        tiltArmed = false;
-        lastTiltActionAt = now;
-        tiltBaseline = activeTilt;
-        skipWord();
-        return;
-      }
-
-      // Continuous slow baseline drift compensation
-      tiltBaseline = (tiltBaseline * 0.94) + (activeTilt * 0.06);
+      return true;
     }
 
     async function enableTiltListening() {
       if (window.__ucTiltListening) return true;
 
-      if (typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function") {
-        try {
-          const res = await DeviceOrientationEvent.requestPermission();
-          if (res !== "granted") return false;
-        } catch (e) {
-          return false;
-        }
+      const orientationOk = await requestOrientationPermission();
+      const motionOk = await requestMotionPermission();
+      if (!orientationOk && !motionOk) return false;
+
+      if (motionOk) {
+        window.addEventListener("devicemotion", onDeviceMotion, true);
+      }
+      if (orientationOk) {
+        window.addEventListener("deviceorientation", onDeviceOrientation, true);
       }
 
-      window.addEventListener("deviceorientation", onDeviceOrientation, true);
       window.__ucTiltListening = true;
       return true;
     }
@@ -1810,6 +2047,7 @@
       }
       lastRecordingUrl = "";
       lastRecordingBlob = null;
+      activeRecordingMimeType = "";
       lastUploadedVideoUrl = "";
       lastNativeFileUri = "";
       recordPreview.removeAttribute("src");
@@ -1817,6 +2055,28 @@
       recordPreviewWrap.style.display = "none";
       downloadLink.style.display = "none";
       shareRecordingBtn.style.display = "none";
+    }
+
+    async function requestWebRecordingPermission() {
+      if (!webRecordingSupported()) {
+        statusEl.textContent = "Recording is not supported on this device/browser.";
+        return false;
+      }
+
+      try {
+        statusEl.textContent = "Requesting camera and microphone permissions...";
+        const permissionStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "user" } },
+          audio: true
+        });
+        permissionStream.getTracks().forEach(track => track.stop());
+        statusEl.textContent = "Camera and microphone permissions granted.";
+        return true;
+      } catch (e) {
+        console.warn("Recording permission request failed or denied:", e);
+        statusEl.textContent = "Please allow camera and microphone access for recording.";
+        return false;
+      }
     }
 
     async function ensureWebRecordStream() {
@@ -1844,17 +2104,27 @@
     function getPreferredMimeType() {
       if (!window.MediaRecorder) return "";
       const options = [
-        "video/webm;codecs=vp8,opus",
-        "video/webm",
+        "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+        "video/mp4;codecs=h264,aac",
         "video/mp4",
-        "video/mp4;codecs=h264,aac"
+        "video/webm;codecs=vp8,opus",
+        "video/webm"
       ];
       for (const type of options) {
         try {
           if (MediaRecorder.isTypeSupported(type)) return type;
-        } catch (e) { }
+        } catch (e) {}
       }
       return "";
+    }
+
+    function getRecordingExtension(mimeType = lastRecordingMimeType) {
+      return String(mimeType || "").toLowerCase().includes("mp4") ? "mp4" : "webm";
+    }
+
+    function getRecordingFileName(prefix = "urban-charades") {
+      const ext = getRecordingExtension();
+      return lastSavedFileName || `${prefix}-${Date.now()}.${ext}`;
     }
 
     function updateRecordingActions() {
@@ -1869,7 +2139,6 @@
         recordPreview.src = lastRecordingUrl;
         recordPreviewWrap.style.display = "flex";
 
-        // Auto-scroll to video if on home screen
         if (!winOverlay.classList.contains("show")) {
           recordPreviewWrap.scrollIntoView({ behavior: 'smooth' });
         }
@@ -1888,7 +2157,7 @@
     async function persistRecording(blob) {
       if (!blob) return;
 
-      const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
+      const ext = getRecordingExtension();
       const fileName = `urban-charades-${Date.now()}.${ext}`;
       lastSavedFileName = fileName;
 
@@ -1902,14 +2171,33 @@
       }
     }
 
+    // ==================== FIXED SAVE/SHARE FUNCTIONS ====================
+
+    function normalizeBase64Data(value) {
+      const raw = String(value || "");
+      const data = raw.includes(",") ? raw.slice(raw.indexOf(",") + 1) : raw;
+      return data
+        .replace(/\s+/g, "")
+        .replace(/-/g, "+")
+        .replace(/_/g, "/")
+        .replace(/[^A-Za-z0-9+/=]/g, "");
+    }
+
     async function blobToBase64(blob) {
-      return await new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error("Failed to read blob"));
         reader.onloadend = () => {
-          const result = reader.result || "";
-          const base64 = String(result).split(",")[1] || "";
-          resolve(base64);
+          try {
+            const base64 = normalizeBase64Data(reader.result);
+            if (!base64) {
+              reject(new Error("No base64 data found in blob"));
+              return;
+            }
+            resolve(base64);
+          } catch (e) {
+            reject(e);
+          }
         };
         reader.readAsDataURL(blob);
       });
@@ -1917,46 +2205,49 @@
 
     async function writeBlobToNativeFile(blob, fileName) {
       const Filesystem = Cap?.Plugins?.Filesystem;
-      if (!Filesystem || !blob) return "";
-
-      const base64Data = await blobToBase64(blob);
-      const path = `urban-charades/${fileName}`;
+      if (!Filesystem) throw new Error("Filesystem plugin is not available.");
+      if (!blob) throw new Error("No recording blob is available.");
 
       try {
-        await Filesystem.mkdir({
-          path: "urban-charades",
-          directory: "DOCUMENTS",
+        // Convert blob to base64 properly
+        const base64Data = await blobToBase64(blob);
+        if (!base64Data) throw new Error("Failed to convert blob to base64");
+
+        const safeFileName = (fileName || getRecordingFileName())
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+        const writeResult = await Filesystem.writeFile({
+          path: safeFileName,
+          data: base64Data,
+          directory: NATIVE_RECORDING_DIR || "CACHE",
           recursive: true
         });
-      } catch (e) { }
 
-      await Filesystem.writeFile({
-        path,
-        data: base64Data,
-        directory: "DOCUMENTS",
-        recursive: true
-      });
+        const uriResult = await Filesystem.getUri({
+          path: safeFileName,
+          directory: NATIVE_RECORDING_DIR || "CACHE"
+        });
 
-      const uriResult = await Filesystem.getUri({
-        path,
-        directory: "DOCUMENTS"
-      });
-
-      return uriResult?.uri || "";
+        return uriResult?.uri || writeResult?.uri || "";
+      } catch (error) {
+        console.error("writeBlobToNativeFile error:", error);
+        throw new Error(`Failed to write file: ${error.message}`);
+      }
     }
 
     async function ensureShareableRecordingFile() {
       if (lastNativeFileUri) return lastNativeFileUri;
 
       if (lastRecordingBlob) {
-        const ext = (lastRecordingMimeType || "").includes("mp4") ? "mp4" : "webm";
-        const fileName = lastSavedFileName || `urban-charades-${Date.now()}.${ext}`;
+        const fileName = getRecordingFileName();
         lastNativeFileUri = await writeBlobToNativeFile(lastRecordingBlob, fileName);
         return lastNativeFileUri;
       }
 
       return "";
     }
+
+    // ==================== END FIXED FUNCTIONS ====================
 
     async function startRecordingForRound() {
       if (!recordEnabled) return;
@@ -1979,19 +2270,26 @@
       }
 
       usingNativeRecording = false;
+      const permissionOk = await requestWebRecordingPermission();
+      if (!permissionOk) return;
+
       const ok = await ensureWebRecordStream();
       if (!ok) {
-        statusEl.textContent = "Recording not supported on this device/browser.";
+        statusEl.textContent = "Recording could not access the camera or microphone.";
         return;
       }
 
       mediaChunks = [];
 
       try {
-        const mimeType = getPreferredMimeType();
-        mediaRecorder = mimeType
-          ? new MediaRecorder(recordStream, { mimeType })
+        activeRecordingMimeType = getPreferredMimeType();
+        mediaRecorder = activeRecordingMimeType
+          ? new MediaRecorder(recordStream, { mimeType: activeRecordingMimeType })
           : new MediaRecorder(recordStream);
+        activeRecordingMimeType = mediaRecorder.mimeType || activeRecordingMimeType || "video/webm";
+        if (!activeRecordingMimeType.toLowerCase().includes("mp4")) {
+          console.warn("MP4 recording is not supported by this WebView. Falling back to:", activeRecordingMimeType);
+        }
 
         mediaRecorder.ondataavailable = (event) => {
           if (event.data && event.data.size > 0) {
@@ -2007,20 +2305,21 @@
               return;
             }
 
-            const blob = new Blob(mediaChunks, { type: getPreferredMimeType() || "video/webm" });
+            const blob = new Blob(mediaChunks, { type: activeRecordingMimeType || "video/webm" });
             lastRecordingBlob = blob;
             window.lastRecordingBlob = blob;
-            lastRecordingMimeType = blob.type;
+            lastRecordingMimeType = blob.type || activeRecordingMimeType || "video/webm";
             lastRecordingUrl = URL.createObjectURL(blob);
 
-            // Don't await this, let it happen in background
             persistRecording(blob).catch(err => console.warn("Background persist failed:", err));
 
             updateRecordingActions();
 
-            statusEl.textContent = "✅ Video Ready!";
+            statusEl.textContent = lastRecordingMimeType.toLowerCase().includes("mp4")
+              ? "Video Ready (MP4)!"
+              : "Video Ready (WebM - MP4 not supported on this device).";
             setTimeout(() => {
-              if (statusEl.textContent === "✅ Video Ready!") statusEl.textContent = "";
+              if (statusEl.textContent.startsWith("Video Ready")) statusEl.textContent = "";
             }, 5000);
           } catch (e) {
             console.error("onstop failed:", e);
@@ -2044,7 +2343,8 @@
           const plugin = Cap?.Plugins?.VideoRecorder || Cap?.Plugins?.CameraPreview || Cap?.Plugins?.Capture;
           if (plugin?.stopRecording) {
             const result = await plugin.stopRecording();
-            let nativePath = result?.path || result?.filePath || result?.fileUrl || result?.url || result?.videoUrl || result?.uri;
+            let nativePath = result?.path || result?.filePath || result?.fileUrl || result?.url || result?.videoUrl || result
+              ?.uri;
             if (nativePath) {
               const cleanPath = nativePath.replace(/^file:\/\//, "");
               lastNativeFileUri = nativePath;
@@ -2058,7 +2358,8 @@
                 if (Filesystem) {
                   const fileData = await Filesystem.readFile({ path: cleanPath });
                   if (fileData?.data) {
-                    const blob = await (await fetch(`data:${fileData.data.includes(",") ? "" : "video/mp4;base64,"}${fileData.data}`)).blob();
+                    const blob = await (await fetch(
+                      `data:${fileData.data.includes(",") ? "" : "video/mp4;base64,"}${fileData.data}`)).blob();
                     lastRecordingBlob = blob;
                     window.lastRecordingBlob = blob;
                     lastRecordingMimeType = "video/mp4";
@@ -2066,7 +2367,7 @@
                 }
                 if (!lastSavedFileName) lastSavedFileName = `urban-charades-${Date.now()}.mp4`;
                 if (lastRecordingBlob) await persistRecording(lastRecordingBlob);
-              } catch (e) { }
+              } catch (e) {}
               updateRecordingActions();
             }
           }
@@ -2075,7 +2376,6 @@
         return;
       }
 
-      // Web Fallback
       try {
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
           mediaRecorder.stop();
@@ -2089,39 +2389,130 @@
       usingNativeRecording = false;
     }
 
+    function assertNativeVideoShareResult(result) {
+      const message = String(result || "");
+      if (!message || message.startsWith("ERROR:")) {
+        throw new Error(message.replace(/^ERROR:\s*/, "") || "Native video share failed.");
+      }
+      return message;
+    }
+
+    function bytesToNativeString(bytes) {
+      let value = "";
+      const step = 8192;
+      for (let i = 0; i < bytes.length; i += step) {
+        value += String.fromCharCode(...bytes.subarray(i, i + step));
+      }
+      return value;
+    }
+
+    async function shareRecordingViaNativeBridge(title, text, dialogTitle) {
+      const nativeShare = window.NativeVideoShare;
+      const blobToShare = lastRecordingBlob || window.lastRecordingBlob;
+      if (!isNativeMobile() || !nativeShare || !nativeShare.appendVideoBytes || !blobToShare) return false;
+
+      const fileName = getRecordingFileName("urban-charades-recording");
+      const bytes = new Uint8Array(await blobToShare.arrayBuffer());
+      const chunkSize = 24000;
+      const totalChunks = Math.max(1, Math.ceil(bytes.length / chunkSize));
+
+      assertNativeVideoShareResult(nativeShare.beginVideoFile(fileName));
+      for (let i = 0; i < totalChunks; i++) {
+        statusEl.textContent = totalChunks > 1
+          ? `Preparing recording... ${i + 1}/${totalChunks}`
+          : "Preparing recording...";
+        const chunk = bytesToNativeString(bytes.subarray(i * chunkSize, (i + 1) * chunkSize));
+        assertNativeVideoShareResult(nativeShare.appendVideoBytes(chunk));
+      }
+
+      const contentUri = assertNativeVideoShareResult(nativeShare.finishVideoFile());
+      statusEl.textContent = dialogTitle || "Opening share sheet...";
+      assertNativeVideoShareResult(nativeShare.shareVideo(
+        contentUri,
+        title || "Urban Charades Video",
+        text || "",
+        dialogTitle || "Share recording"
+      ));
+      return true;
+    }
+
+    async function saveRecordingViaNativeBridge() {
+      const nativeShare = window.NativeVideoShare;
+      const blobToSave = lastRecordingBlob || window.lastRecordingBlob;
+      if (!isNativeMobile() || !nativeShare || !nativeShare.appendVideoBytes || !nativeShare.saveVideo || !blobToSave) return false;
+
+      const fileName = getRecordingFileName("urban-charades-recording");
+      const bytes = new Uint8Array(await blobToSave.arrayBuffer());
+      const chunkSize = 24000;
+      const totalChunks = Math.max(1, Math.ceil(bytes.length / chunkSize));
+
+      assertNativeVideoShareResult(nativeShare.beginVideoFile(fileName));
+      for (let i = 0; i < totalChunks; i++) {
+        statusEl.textContent = totalChunks > 1
+          ? `Saving recording... ${i + 1}/${totalChunks}`
+          : "Saving recording...";
+        const chunk = bytesToNativeString(bytes.subarray(i * chunkSize, (i + 1) * chunkSize));
+        assertNativeVideoShareResult(nativeShare.appendVideoBytes(chunk));
+      }
+
+      assertNativeVideoShareResult(nativeShare.finishVideoFile());
+      assertNativeVideoShareResult(nativeShare.saveVideo(fileName, lastRecordingMimeType || blobToSave.type || "video/webm"));
+      return true;
+    }
+    async function shareRecordingViaCapacitor(title, text, dialogTitle) {
+      const Share = Cap?.Plugins?.Share;
+      if (!isNativeMobile() || !Share) return false;
+
+      const fileUri = await ensureShareableRecordingFile();
+      if (!fileUri) return false;
+
+      statusEl.textContent = dialogTitle || "Opening share sheet...";
+      await Share.share({
+        title: title || "Urban Charades Video",
+        text: text || "",
+        files: [fileUri],
+        dialogTitle: dialogTitle || "Share recording"
+      });
+      return true;
+    }
+
+    async function shareRecordingBlobViaWebShare(title, text) {
+      const blobToShare = lastRecordingBlob || window.lastRecordingBlob;
+      if (!navigator.share || !blobToShare || typeof File === "undefined") return false;
+
+      const file = new File(
+        [blobToShare],
+        getRecordingFileName("urban-charades-recording"),
+        { type: lastRecordingMimeType || blobToShare.type || "video/webm" }
+      );
+      const shareData = { title, text, files: [file] };
+
+      if (navigator.canShare && !navigator.canShare(shareData)) return false;
+      await navigator.share(shareData);
+      return true;
+    }
+
     async function shareLastRecording() {
       const Share = Cap?.Plugins?.Share;
 
       if (isNativeMobile()) {
         try {
-          const Share = Cap?.Plugins?.Share;
-          const nativeUri = await ensureShareableRecordingFile();
-
-          if (nativeUri && Share?.share) {
-            statusEl.textContent = "Opening share sheet...";
-            await Share.share({
-              title: "Urban Charades Video",
-              text: "Check out my charades round!",
-              url: nativeUri,
-              files: [nativeUri],
-              dialogTitle: "Share recording"
-            });
-            statusEl.textContent = "Shared!";
+          statusEl.textContent = "Preparing recording...";
+          if (await shareRecordingViaNativeBridge("Urban Charades Video", "Check out my charades round!", "Share recording")) {
+            statusEl.textContent = "Share sheet opened.";
             return;
           }
 
-          if (lastUploadedVideoUrl && Share?.share) {
-            await Share.share({
-              title: "Urban Charades Video",
-              text: "Check out my charades round!",
-              url: lastUploadedVideoUrl,
-              dialogTitle: "Share recording"
-            });
-            statusEl.textContent = "Shared URL!";
+          statusEl.textContent = "Opening share sheet...";
+          if (await shareRecordingBlobViaWebShare("Urban Charades Video", "Check out my charades round!")) {
+            statusEl.textContent = "Share sheet opened.";
             return;
           }
+
+          statusEl.textContent = "Could not prepare recording file.";
         } catch (e) {
           console.log("Share dialog closed/failed:", e);
+          statusEl.textContent = `Share failed: ${e?.message || "Could not open share sheet."}`;
         }
         return;
       }
@@ -2131,7 +2522,7 @@
         try {
           const file = new File(
             [blobToShare],
-            lastSavedFileName || "urban-charades-recording.webm",
+            getRecordingFileName("urban-charades-recording"),
             { type: lastRecordingMimeType || "video/webm" }
           );
           await navigator.share({
@@ -2347,12 +2738,20 @@
     function skipWord() {
       if (!roundActive || transitionLock) return;
       safePlay(soundSkip, 520, 120);
+      tiltLockedAction = null;
+      tiltLockedAt = 0;
+      tiltCandidateAction = null;
+      tiltCandidateCount = 0;
       transitionToNextWord("pass", false);
     }
 
     function correctWord() {
       if (!roundActive || transitionLock) return;
       safePlay(soundCorrect, 980, 130);
+      tiltLockedAction = null;
+      tiltLockedAt = 0;
+      tiltCandidateAction = null;
+      tiltCandidateCount = 0;
       transitionToNextWord("correct", true);
     }
 
@@ -2383,7 +2782,7 @@
       hideActionFlash();
       await unlockGameOrientation();
       timerEl.style.color = "#0d2d56";
-      statusEl.textContent = "Tap the button below to start Team A's turn!"; // Clear the old message
+      statusEl.textContent = "Tap the button below to start Team A's turn!";
       updateStartPrompt();
     }
 
@@ -2416,7 +2815,7 @@
     }
 
     function enterGame() {
-      applyTeamNames(); // Ensure default names are set
+      applyTeamNames();
       introOverlay.classList.remove("show");
       updateRecordingUI();
       updateStartPrompt();
@@ -2427,22 +2826,14 @@
         try {
           ensureAudioContext();
           playIntroChime();
-        } catch (e) { }
+        } catch (e) {}
 
         try {
           await enableTiltListening();
-        } catch (e) { }
+        } catch (e) {}
 
-        try {
-          if (recordEnabled) {
-            statusEl.textContent = "Requesting permissions...";
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            stream.getTracks().forEach(track => track.stop());
-            statusEl.textContent = "Permissions granted.";
-          }
-        } catch (e) {
-          console.warn("Initial permission request failed or denied:", e);
-          statusEl.textContent = "Please allow camera access for recording.";
+        if (recordEnabled) {
+          await requestWebRecordingPermission();
         }
       }, 0);
     }
@@ -2451,23 +2842,19 @@
     startPromptBtn.onclick = beginCountdownPrompt;
     shareRecordingBtn.onclick = shareLastRecording;
 
-
     const handleDownload = async (e) => {
       if (e) e.preventDefault();
 
       if (isNativeMobile()) {
         try {
-          const Share = Cap?.Plugins?.Share;
-          const nativeUri = await ensureShareableRecordingFile();
+          statusEl.textContent = "Saving recording...";
+          if (await saveRecordingViaNativeBridge()) {
+            statusEl.textContent = "Recording saved to Videos.";
+            return;
+          }
 
-          if (nativeUri && Share?.share) {
-            statusEl.textContent = "Opening save/share menu...";
-            await Share.share({
-              title: "Save Urban Charades Recording",
-              text: "Save or send this recording.",
-              files: [nativeUri],
-              dialogTitle: "Save recording"
-            });
+          statusEl.textContent = "Opening save/share menu...";
+          if (await shareRecordingBlobViaWebShare("Save Urban Charades Recording", "Save or send this recording.")) {
             statusEl.textContent = "Recording menu opened.";
             return;
           }
@@ -2476,7 +2863,7 @@
           return;
         } catch (err) {
           console.error(err);
-          statusEl.textContent = "Save failed on this device.";
+          statusEl.textContent = `Save failed: ${err?.message || "Could not prepare recording."}`;
           return;
         }
       }
@@ -2487,7 +2874,7 @@
           const url = URL.createObjectURL(blobToSave);
           const a = document.createElement("a");
           a.href = url;
-          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          a.download = getRecordingFileName("urban-charades-recording");
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -2504,7 +2891,7 @@
         try {
           const a = document.createElement("a");
           a.href = lastRecordingUrl;
-          a.download = lastSavedFileName || "urban-charades-recording.webm";
+          a.download = getRecordingFileName("urban-charades-recording");
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -2573,8 +2960,8 @@
     wordEl.addEventListener("click", (e) => {
       if (!roundActive || transitionLock) return;
       const rect = wordEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      if (x < rect.width / 2) skipWord();
+      const y = e.clientY - rect.top;
+      if (y < rect.height / 2) skipWord();
       else correctWord();
     });
 
@@ -2597,7 +2984,7 @@
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => { });
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 

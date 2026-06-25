@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Urban Charades</string>
+    <string name="title_activity_main">Urban Charades</string>
+    <string name="package_name">com.urbangroupent.urbancharadesgame</string>
+    <string name="custom_url_scheme">com.urbangroupent.urbancharadesgame</string>
+</resources>
