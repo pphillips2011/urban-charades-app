@@ -1964,7 +1964,7 @@
           if (Date.now() - foreheadStableSince >= FOREHEAD_READY_MIN_MS) {
             waitingForForeheadPose = false;
             foreheadStableSince = 0;
-            startTiltCalibrationSequence();
+            startCountdownSequence();
           }
         } else {
           foreheadStableSince = 0;
@@ -2270,9 +2270,6 @@
       }
 
       usingNativeRecording = false;
-      const permissionOk = await requestWebRecordingPermission();
-      if (!permissionOk) return;
-
       const ok = await ensureWebRecordStream();
       if (!ok) {
         statusEl.textContent = "Recording could not access the camera or microphone.";
@@ -2635,6 +2632,13 @@
       clearCountdownTimers();
       waitingForForeheadPose = true;
       foreheadStableSince = 0;
+      countdownTimers.push(setTimeout(() => {
+        if (preRoundActive && waitingForForeheadPose) {
+          waitingForForeheadPose = false;
+          foreheadStableSince = 0;
+          startCountdownSequence();
+        }
+      }, 1500));
     }
 
     function startCountdownSequence() {
@@ -2682,7 +2686,7 @@
       setTimeout(() => calibrateTilt(), 350);
 
       safePlay(soundStart, 880, 180);
-      await startRecordingForRound();
+      startRecordingForRound().catch(e => console.error("Recording start failed:", e));
 
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
